@@ -1,4 +1,4 @@
-# app.py
+
 import os
 import logging
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file
@@ -78,7 +78,7 @@ def safe_text(s, maxlen=500):
     return escape(s)
 
 # Template filter for image count
-# Template filter for image count - FIXED VERSION
+
 @app.template_filter('get_image_count')
 def get_image_count(student_or_roll, subject_id):
     import os
@@ -190,9 +190,9 @@ def department_add_professor():
 
     name = request.form.get('name', '').strip()
     prof_id = request.form.get('prof_id', '').strip()
-    temp_password = request.form.get('temp_password', '').strip()  # Changed from password
+    temp_password = request.form.get('temp_password', '').strip()  
 
-    if not name or not prof_id or not temp_password:  # Now required
+    if not name or not prof_id or not temp_password:  
         flash('Professor name, ID and temporary password are required.', 'danger')
         return redirect(url_for('department_dashboard'))
 
@@ -202,7 +202,7 @@ def department_add_professor():
 
     prof = User(username=name, prof_id=prof_id, department_id=current_user.id)
     prof.set_password(temp_password)
-    prof.password_change_required = True  # Force password change on first login
+    prof.password_change_required = True  
     db.session.add(prof)
     db.session.commit()
     
@@ -386,7 +386,7 @@ def delete_subject(subject_id):
     subject_name = subject.name
     
     try:
-        # 1. Delete all students in this subject and their data
+        #  Delete all students in this subject and their data
         students_in_subject = Student.query.filter_by(subject_id=subject.id).all()
         students_deleted = 0
         
@@ -617,14 +617,14 @@ def department_start_training(subject_id):
             res = face_pipe.train_subject_optimized(subject_id, mode)
             training_progress[subject_id].update({
                 'progress': 100,
-                'status': '✅ Department training complete' if res.get('status') == 'success' else f'❌ Department training failed: {res.get("message", "Unknown error")}',
+                'status': ' Department training complete' if res.get('status') == 'success' else f' Department training failed: {res.get("message", "Unknown error")}',
                 'done': True,
                 'result': res
             })
         except Exception as e:
             training_progress[subject_id].update({
                 'progress': 100,
-                'status': f'❌ Department training failed: {str(e)}',
+                'status': f' Department training failed: {str(e)}',
                 'done': True
             })
 
@@ -646,7 +646,7 @@ def department_get_training_status(subject_id):
 
 @app.route('/professor/login', methods=['GET','POST'])
 def login_professor():
-    # Get all departments and professors for dropdowns
+   
     all_departments = Department.query.all()
     all_professors = User.query.all()
     
@@ -656,13 +656,13 @@ def login_professor():
         username = request.form.get('username','').strip()
         password = request.form.get('password','').strip()
 
-        # Case-insensitive department lookup
+        
         dept = Department.query.filter(Department.name.ilike(dept_name)).first()
         if not dept:
             flash('Department not found.', 'danger')
             return redirect(url_for('login_professor'))
 
-        # Case-insensitive professor lookup
+        
         prof = User.query.filter(
             User.prof_id.ilike(prof_id), 
             User.department_id == dept.id
@@ -671,7 +671,7 @@ def login_professor():
             flash('Professor ID invalid.', 'danger')
             return redirect(url_for('login_professor'))
 
-        # Case-insensitive username comparison
+        
         if prof.username.lower() != username.lower():
             flash('Professor name does not match.', 'danger')
             return redirect(url_for('login_professor'))
@@ -720,7 +720,7 @@ def prof_dashboard():
                          total_classes=total_classes,
                          active_courses=active_courses)
 
-# Student Management (Keep these for now, but they'll be deprecated)
+# Student Management 
 @app.route('/prof/<int:subject_id>/students/add')
 @login_required
 def add_student_page(subject_id):
@@ -911,9 +911,9 @@ def start_training(subject_id):
                     'students_processed': i,
                     'status': f'Processing student {i+1}/{total_students}: {roll}'
                 })
-                time.sleep(0.5)  # Simulate processing time
+                time.sleep(0.5)  
                 
-                # Your actual training logic here
+                
                 successful_students += 1
             
             # Final encoding and saving
@@ -923,7 +923,7 @@ def start_training(subject_id):
             })
             time.sleep(1)
             
-            # Run actual training
+            #  actual training
             res = face_pipe.train_subject_optimized(subject_id, mode)
 
             training_progress[subject_id].update({
@@ -963,7 +963,7 @@ def train_results(subject_id):
     res = face_pipe.train_report(subject_id)
     return render_template('train_results.html', report=res, subject=subj)
 
-# === ADD DEBUG ROUTES HERE ===
+# === DEBUG ROUTES  ===
 @app.route('/debug/training/<int:subject_id>')
 @login_required
 def debug_training(subject_id):
@@ -1047,7 +1047,7 @@ def debug_attendance_date(subject_id, date):
     if not session:
         return jsonify({'error': 'No class session found for this date'})
     
-    # Get all attendance records for this session
+    #  all attendance records for this session
     attendance_records = Attendance.query.filter_by(
         class_session_id=session.id
     ).join(Student).all()
@@ -1064,7 +1064,7 @@ def debug_attendance_date(subject_id, date):
             'timestamp': record.timestamp.isoformat() if record.timestamp else None
         })
     
-    # Get all students in the subject for comparison
+    # all students in the subject for comparison
     all_students = Student.query.filter_by(subject_id=subject_id).all()
     student_list = [{'id': s.id, 'name': s.name, 'roll': s.roll} for s in all_students]
     
@@ -1084,7 +1084,7 @@ def debug_calendar_data(subject_id):
     if not isinstance(current_user, User):
         return jsonify({'error': 'Access denied'}), 403
     
-    # Get all class sessions
+    #  all class sessions
     sessions = ClassSession.query.filter_by(subject_id=subject_id).all()
     session_data = []
     
@@ -1097,7 +1097,7 @@ def debug_calendar_data(subject_id):
             'start_time': session.start_time.isoformat() if session.start_time else None
         })
     
-    # Get all students
+    #  all students
     students = Student.query.filter_by(subject_id=subject_id).all()
     student_data = [{'id': s.id, 'name': s.name, 'roll': s.roll} for s in students]
     
@@ -1121,7 +1121,7 @@ def debug_attendance_db_check(subject_id, date):
     except ValueError:
         return jsonify({'error': 'Invalid date format'}), 400
     
-    # Find class session
+    #  class session
     session = ClassSession.query.filter_by(
         subject_id=subject_id, 
         date=attendance_date
@@ -1130,7 +1130,7 @@ def debug_attendance_db_check(subject_id, date):
     if not session:
         return jsonify({'error': 'No session found'})
     
-    # Get raw database records
+    #  raw database records
     attendance_records = Attendance.query.filter_by(
         class_session_id=session.id
     ).join(Student).all()
@@ -1148,7 +1148,7 @@ def debug_attendance_db_check(subject_id, date):
             'edited': record.edited
         })
     
-    # Get all students in subject for comparison
+    #  all students in subject for comparison
     all_students = Student.query.filter_by(subject_id=subject_id).all()
     student_list = [{'id': s.id, 'name': s.name, 'roll': s.roll} for s in all_students]
     
@@ -1175,7 +1175,7 @@ def debug_attendance_check(subject_id, date):
     except ValueError:
         return jsonify({'error': 'Invalid date format'}), 400
     
-    # Find class session
+    #  class session
     session = ClassSession.query.filter_by(
         subject_id=subject_id, 
         date=attendance_date
@@ -1184,12 +1184,12 @@ def debug_attendance_check(subject_id, date):
     if not session:
         return jsonify({'error': 'No session found for this date'})
     
-    # Get all attendance records for this session
+    #  all attendance records for this session
     attendance_records = Attendance.query.filter_by(
         class_session_id=session.id
     ).join(Student).all()
     
-    # Get all students in the subject
+    # all students in the subject
     all_students = Student.query.filter_by(subject_id=subject_id).all()
     
     records_data = []
@@ -1254,7 +1254,7 @@ def recognize_frame(subject_id):
     data = request.get_json(force=True)
     image = data.get('image')
     session_id = data.get('session_id')
-    liveness_data = data.get('liveness_data', {})  # Get liveness data
+    liveness_data = data.get('liveness_data', {}) 
     
     subj = Subject.query.get_or_404(subject_id)
     if subj.professor_id != current_user.id:
@@ -1262,7 +1262,7 @@ def recognize_frame(subject_id):
     
     # Check liveness data if provided
     if liveness_data:
-        # Verify anti-spoofing score
+        
         anti_spoofing_score = liveness_data.get('antiSpoofingScore', 0)
         real_person_score = liveness_data.get('realPersonScore', 0)
         spoofing_detected = liveness_data.get('spoofingDetected', False)
@@ -1323,7 +1323,7 @@ def recognize_frame(subject_id):
             results.append({'status': 'unknown', 'roll': roll, 'message': 'Student not found in database'})
             continue
 
-        # For low confidence matches, just report but don't mark attendance
+        # For low confidence matches, 
         if status == 'low_confidence':
             results.append({
                 'status': 'low_confidence', 
@@ -1334,7 +1334,7 @@ def recognize_frame(subject_id):
             })
             continue
 
-        # Check if already marked in this session (only for high confidence)
+        # Check if already marked in this session
         existing_in_session = Attendance.query.filter_by(
             class_session_id=session_id, 
             student_id=st.id
@@ -1365,7 +1365,7 @@ def recognize_frame(subject_id):
             })
             continue
 
-        # Only mark attendance for high confidence matches (status == 'recognized')
+        # Only mark attendance for high confidence matches 
         if status == 'recognized':
             # Mark attendance with timestamp and liveness data
             att = Attendance(
@@ -1380,7 +1380,7 @@ def recognize_frame(subject_id):
             db.session.commit()
             
             # Log the attendance for debugging
-            logger.info(f"✅ Attendance marked with anti-spoofing: {st.name} ({st.roll}) - Liveness: {liveness_data.get('livenessScore', 0)}%")
+            logger.info(f" Attendance marked with anti-spoofing: {st.name} ({st.roll}) - Liveness: {liveness_data.get('livenessScore', 0)}%")
             
             results.append({
                 'status': 'marked', 
@@ -1390,10 +1390,10 @@ def recognize_frame(subject_id):
                 'confidence': confidence,
                 'liveness_score': liveness_data.get('livenessScore', 0),
                 'anti_spoofing_score': liveness_data.get('antiSpoofingScore', 0),
-                'message': f'✅ Attendance marked for {st.name} with anti-spoofing verification'
+                'message': f' Attendance marked for {st.name} with anti-spoofing verification'
             })
         else:
-            # This shouldn't happen, but just in case
+            
             results.append({
                 'status': status,
                 'roll': roll,
@@ -1422,7 +1422,7 @@ def view_attendance(subject_id):
     if end: q = q.filter(ClassSession.date <= end)
     rows = q.order_by(Attendance.timestamp.desc()).all()
 
-    # Get all class dates for calendar
+    #  all class dates for calendar
     class_dates = [session.date.isoformat() for session in 
                   ClassSession.query.filter_by(subject_id=subject_id).all()]
     total_classes = len(class_dates)
@@ -1448,7 +1448,7 @@ def view_attendance(subject_id):
 
 # ===== CALENDAR ROUTES =====
 
-# In app.py
+
 
 @app.route('/prof/<int:subject_id>/attendance_date/<date>')
 @login_required
@@ -1462,8 +1462,8 @@ def get_attendance_for_date(subject_id, date):
     except ValueError:
         return jsonify({'error': 'Invalid date format'}), 400
     
-    # --- FIX START ---
-    # Find ALL class sessions for this date, not just the first one
+    
+    #  ALL class sessions for this date, not just the first one
     sessions = ClassSession.query.filter_by(
         subject_id=subject_id, 
         date=attendance_date
@@ -1478,18 +1478,18 @@ def get_attendance_for_date(subject_id, date):
             'message': 'No class session found for this date'
         })
     
-    # Get the IDs of all sessions for this day
+    #   IDs of all sessions for this day
     session_ids = [s.id for s in sessions]
     
-    # Get ALL attendance records for ALL sessions on this day
+    #  ALL attendance records for ALL sessions on this day
     all_attendance_records = Attendance.query.filter(
         Attendance.class_session_id.in_(session_ids)
     ).join(Student).all()
-    # --- FIX END ---
+  
 
     # Now, aggregate results by student
-    # We want one record per student, favoring 'present'
-    student_records = {} # Use dict to store the "best" record for each student
+   
+    student_records = {} 
     
     for record in all_attendance_records:
         if record.student_id not in student_records:
@@ -1504,11 +1504,11 @@ def get_attendance_for_date(subject_id, date):
                  (student_records[record.student_id].confidence is None or record.confidence > student_records[record.student_id].confidence):
                  student_records[record.student_id] = record
 
-    # Now build the final list from our aggregated records
+    #  the final list from our aggregated records
     records_data = []
     for student_id, record in student_records.items():
         records_data.append({
-            'attendance_id': record.id, # Note: this is just one of the record IDs
+            'attendance_id': record.id,
             'student_id': record.student.id,
             'student_name': record.student.name,
             'student_roll': record.student.roll,
@@ -1527,7 +1527,7 @@ def get_attendance_for_date(subject_id, date):
         'total_students': total_students_in_subject,
         'present_count': present_count,
         'has_class': True,
-        'session_ids': session_ids, # Added for debugging
+        'session_ids': session_ids,
         'date': attendance_date.isoformat(),
         'message': f'Found {len(records_data)} unique attendance records, {present_count} present'
     })
@@ -1769,7 +1769,7 @@ def student_dashboard():
         flash('No subject assigned yet.', 'warning')
         return render_template('student_dashboard.html', student=student)
 
-    # Attendance summary for THIS specific subject
+    # Attendance summary for specific subject
     total_classes = ClassSession.query.filter_by(subject_id=subject.id).count()
     marked = Attendance.query.join(ClassSession).filter(
         Attendance.student_id == student.id,
@@ -1778,7 +1778,7 @@ def student_dashboard():
     perc = (marked / total_classes * 100) if total_classes > 0 else 0
     eligible = perc >= 75 or student.eligible_override
 
-    # Attendance trend data for this subject
+    # Attendance trend data for  subject
     attendance_records = Attendance.query.join(ClassSession).filter(
         Attendance.student_id == student.id,
         ClassSession.subject_id == subject.id
