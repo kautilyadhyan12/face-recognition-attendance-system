@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-4">
-  <h3>👥 Add Students — {{ subject.name }}</h3>
+  <h3> Add Students — {{ subject.name }}</h3>
 
-  <!-- Step 1: Student Details Form -->
+  <!--: Student Details Form -->
   <div class="card mb-4">
     <div class="card-header">
       <h5>Step 1: Enter Student Details</h5>
@@ -40,13 +40,13 @@
           </div>
         </div>
         <button type="submit" class="btn btn-primary">
-          💾 Save Student Details
+           Save Student Details
         </button>
       </form>
     </div>
   </div>
 
-  <!-- Step 2: Automatic Image Capture (Hidden initially) -->
+  <!-- Automatic Image Capture-->
   <div class="card mb-4" id="captureSection" style="display: none;">
     <div class="card-header bg-info text-white">
       <h5 class="mb-0">Step 2: Automatic Face Capture</h5>
@@ -55,7 +55,7 @@
       <div class="row">
         <!-- Training Mode Selection -->
         <div class="col-12 mb-4">
-          <h6>🎯 Select Training Mode</h6>
+          <h6> Select Training Mode</h6>
           <div class="row">
             <div class="col-md-6 mb-3">
               <div class="training-mode-capture selected" data-mode="high_quality" data-count="20">
@@ -85,7 +85,7 @@
           </div>
           <div class="mt-3 text-center">
             <div class="alert alert-warning small">
-              <strong>📢 Instructions:</strong> Position the student in good lighting and ensure their face is clearly visible in the frame.
+              <strong> Instructions:</strong> Position the student in good lighting and ensure their face is clearly visible in the frame.
             </div>
           </div>
         </div>
@@ -106,10 +106,10 @@
           
           <div class="capture-controls text-center">
             <button class="btn btn-success btn-lg" id="startCaptureBtn">
-              🚀 Start Automatic Capture
+               Start Automatic Capture
             </button>
             <button class="btn btn-danger btn-lg" id="stopCaptureBtn" style="display: none;">
-              ⏹️ Stop Capture
+               Stop Capture
             </button>
           </div>
           
@@ -132,10 +132,10 @@
       <h5 class="mb-0">Current Students ({{ students|length }})</h5>
       <div>
         <a href="{{ url_for('train_page', subject_id=subject.id) }}" class="btn btn-success btn-sm">
-          🤖 Train Model
+           Train Model
         </a>
         <a href="{{ url_for('mark_attendance_page', subject_id=subject.id) }}" class="btn btn-primary btn-sm">
-          📷 Mark Attendance
+           Mark Attendance
         </a>
       </div>
     </div>
@@ -169,7 +169,7 @@
                   {% elif image_count > 0 %}bg-warning
                   {% else %}bg-danger{% endif %}">
                   {{ image_count }}
-                  {% if image_count >= 20 %}/20 ✅
+                  {% if image_count >= 20 %}/20 
                   {% elif image_count >= 12 %}/12 ✓
                   {% else %}/20{% endif %}
                 </span>
@@ -213,7 +213,7 @@ let currentStudentId = null;
 let currentStudentName = null;
 let currentStudentRoll = null;
 let imagesCaptured = 0;
-let TOTAL_IMAGES = 20; // Default to High Accuracy mode
+let TOTAL_IMAGES = 20; 
 let captureInterval = null;
 let selectedCaptureMode = 'high_quality';
 
@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initCamera('video').then(success => {
     if (!success) {
       document.getElementById('captureStatus').innerHTML = 
-        '<div class="alert alert-danger"><strong>❌ Camera Error:</strong> Cannot access camera. Please check permissions and refresh the page.</div>';
+        '<div class="alert alert-danger"><strong> Camera Error:</strong> Cannot access camera. Please check permissions and refresh the page.</div>';
     }
   });
 
@@ -298,10 +298,10 @@ document.getElementById("studentForm").onsubmit = async function(e){
       document.getElementById("studentForm").reset();
       
     } else {
-      alert('❌ Error: ' + data.message);
+      alert(' Error: ' + data.message);
     }
   } catch (error) {
-    alert('❌ Network error: ' + error.message);
+    alert(' Network error: ' + error.message);
   } finally {
     submitBtn.disabled = false;
     submitBtn.innerHTML = originalText;
@@ -311,7 +311,7 @@ document.getElementById("studentForm").onsubmit = async function(e){
 // Step 2: Start Automatic Capture
 document.getElementById("startCaptureBtn").onclick = function(){
   if(!currentStudentId){ 
-    alert('❌ Please add student details first.'); 
+    alert(' Please add student details first.'); 
     return; 
   }
   
@@ -351,7 +351,7 @@ document.getElementById("startCaptureBtn").onclick = function(){
         updateProgress();
         
         // Show preview of captured images
-        if (imagesCaptured <= 6) { // Show first 6 images as preview
+        if (imagesCaptured <= 6) { 
           const preview = document.getElementById('imagePreview');
           if (imagesCaptured === 1) preview.innerHTML = '';
           preview.innerHTML += `<img src="${dataUrl}" style="width: 50px; height: 50px; object-fit: cover; margin: 2px; border: 1px solid #ccc;">`;
@@ -366,7 +366,7 @@ document.getElementById("startCaptureBtn").onclick = function(){
     } catch (error) {
       console.error('Capture error:', error);
     }
-  }, 500); // Capture every 500ms (slower for better quality)
+  }, 500); 
 };
 
 // Stop capture manually
@@ -377,7 +377,7 @@ document.getElementById("stopCaptureBtn").onclick = function(){
   
   const modeName = selectedCaptureMode === 'high_quality' ? 'High Accuracy' : 'Faster Quality';
   document.getElementById('captureStatus').innerHTML = 
-    `<div class="alert alert-warning"><strong>⏹️ Capture stopped:</strong> ${imagesCaptured}/${TOTAL_IMAGES} images captured for <strong>${currentStudentName}</strong> in ${modeName} mode</div>`;
+    `<div class="alert alert-warning"><strong> Capture stopped:</strong> ${imagesCaptured}/${TOTAL_IMAGES} images captured for <strong>${currentStudentName}</strong> in ${modeName} mode</div>`;
 };
 
 // Complete capture automatically when target images are reached
@@ -390,12 +390,12 @@ function completeCapture() {
   // Show success message
   document.getElementById('captureStatus').innerHTML = 
     `<div class="alert alert-success">
-      <strong>✅ Capture Complete!</strong> ${TOTAL_IMAGES}/${TOTAL_IMAGES} images captured for <strong>${currentStudentName}</strong> in ${modeName} mode
+      <strong> Capture Complete!</strong> ${TOTAL_IMAGES}/${TOTAL_IMAGES} images captured for <strong>${currentStudentName}</strong> in ${modeName} mode
     </div>`;
   
   document.getElementById('imagePreview').innerHTML = 
     `<div class="text-success">
-      <strong>✅ All ${TOTAL_IMAGES} images captured successfully!</strong><br>
+      <strong> All ${TOTAL_IMAGES} images captured successfully!</strong><br>
       <small>Ready for ${modeName} training</small>
     </div>`;
   
@@ -416,13 +416,13 @@ function updateProgress() {
   
   // Change color based on progress
   if (percent < 30) {
-    progressBar.style.backgroundColor = '#dc3545'; // Red
+    progressBar.style.backgroundColor = '#dc3545'; 
   } else if (percent < 70) {
-    progressBar.style.backgroundColor = '#ffc107'; // Yellow
+    progressBar.style.backgroundColor = '#ffc107'; 
   } else if (percent < 100) {
-    progressBar.style.backgroundColor = '#17a2b8'; // Blue
+    progressBar.style.backgroundColor = '#17a2b8'; 
   } else {
-    progressBar.style.backgroundColor = '#28a745'; // Green
+    progressBar.style.backgroundColor = '#28a745'; 
   }
 }
 </script>
