@@ -1,4 +1,4 @@
-// static/js/liveness.js - Enhanced with Anti-Spoofing
+
 class LivenessDetector {
     constructor() {
         this.faceLandmarks = null;
@@ -29,10 +29,10 @@ class LivenessDetector {
         this.MOUTH_AR_CONSEC_FRAMES = 5;
         this.MIN_BLINKS_REQUIRED = 2;
         this.MIN_MOUTH_MOVEMENTS = 1;
-        this.MIN_LIVENESS_SCORE = 80; // Increased for better security
+        this.MIN_LIVENESS_SCORE = 80; 
         this.ANTI_SPOOFING_THRESHOLD = 70;
         this.HEAD_MOVEMENT_THRESHOLD = 5;
-        this.PHOTO_SPOOFING_THRESHOLD = 0.1; // Very low movement variation indicates photo
+        this.PHOTO_SPOOFING_THRESHOLD = 0.1; 
     }
 
     async initialize() {
@@ -46,10 +46,10 @@ class LivenessDetector {
             await faceapi.nets.faceLandmark68Net.loadFromUri('/static/models');
             await faceapi.nets.faceExpressionNet.loadFromUri('/static/models');
             
-            console.log('✅ Face detection models loaded for anti-spoofing');
+            console.log(' Face detection models loaded for anti-spoofing');
             return true;
         } catch (error) {
-            console.error('❌ Failed to load face detection models:', error);
+            console.error(' Failed to load face detection models:', error);
             return false;
         }
     }
@@ -169,7 +169,7 @@ class LivenessDetector {
         const mouth = this.faceLandmarks.getMouth();
         
         // Calculate vertical distances
-        const A = this.distance(mouth[13], mouth[19]); // Top to bottom
+        const A = this.distance(mouth[13], mouth[19]); 
         const B = this.distance(mouth[14], mouth[18]);
         const C = this.distance(mouth[15], mouth[17]);
         
@@ -212,7 +212,7 @@ class LivenessDetector {
         if (this.eyeClosedFrames >= this.EYE_AR_CONSEC_FRAMES && !this.blinkDetected) {
             this.blinkCount++;
             this.blinkDetected = true;
-            console.log(`👁️ Blink detected! Total: ${this.blinkCount}`);
+            console.log(` Blink detected! Total: ${this.blinkCount}`);
         }
         
         if (this.eyeOpenFrames >= this.EYE_AR_CONSEC_FRAMES) {
@@ -223,7 +223,7 @@ class LivenessDetector {
     detectMouthMovements() {
         if (this.mouthOpenFrames >= this.MOUTH_AR_CONSEC_FRAMES && !this.mouthOpenDetected) {
             this.mouthOpenDetected = true;
-            console.log('👄 Mouth movement detected!');
+            console.log(' Mouth movement detected!');
         }
         
         if (this.mouthClosedFrames >= this.MOUTH_AR_CONSEC_FRAMES) {
@@ -272,10 +272,10 @@ class LivenessDetector {
                 
                 const avgMovement = totalMovement / movements;
                 
-                // Detect photo spoofing (very low movement)
+                // Detect photo spoofing 
                 if (avgMovement < this.PHOTO_SPOOFING_THRESHOLD && this.frameHistory.length >= 5) {
                     this.photoSpoofingDetected = true;
-                    console.log('⚠️ Photo spoofing detected (very low movement)');
+                    console.log('Photo spoofing detected (very low movement)');
                 }
             }
         }
@@ -297,9 +297,9 @@ class LivenessDetector {
     }
 
     calculateExpressionVariation() {
-        // Simplified expression variation calculation
-        // In a real implementation, you'd analyze facial expression changes
-        return Math.random() * 0.5 + 0.5; // Placeholder
+        
+        
+        return Math.random() * 0.5 + 0.5; 
     }
 
     calculateMovementVariation() {
@@ -324,7 +324,7 @@ class LivenessDetector {
     }
 
     calculateAntiSpoofingScore() {
-        let score = 100; // Start with perfect score
+        let score = 100; 
         
         // Deduct points for spoofing indicators
         if (this.photoSpoofingDetected) score -= 50;
