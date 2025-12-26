@@ -1,4 +1,4 @@
-# face_pipeline.py - COMPLETE GPU OPTIMIZED VERSION
+
 import os
 import base64
 import numpy as np
@@ -31,7 +31,7 @@ class FacePipeline:
         # Clear any existing TensorFlow session
         tf.keras.backend.clear_session()
         
-        # UPDATED CONFIG - RetinaFace + ArcFace
+        #   RetinaFace + ArcFace
         self.model_configs = {
             'high_quality': {
                 'detector_backend': 'retinaface',
@@ -60,17 +60,17 @@ class FacePipeline:
         try:
             import torch
             
-            # Show GPU status
+            #  GPU status
             if torch.cuda.is_available():
                 gpu_name = torch.cuda.get_device_name(0)
                 gpu_memory = torch.cuda.get_device_properties(0).total_memory // (1024**2)
                 cuda_version = torch.version.cuda
-                logger.info(f"🎯 GPU DETECTED: {gpu_name}")
-                logger.info(f"💾 GPU MEMORY: {gpu_memory}MB")
-                logger.info(f"🔧 CUDA VERSION: {cuda_version}")
-                logger.info("🚀 Performance: 5-10x faster than CPU")
+                logger.info(f" GPU DETECTED: {gpu_name}")
+                logger.info(f" GPU MEMORY: {gpu_memory}MB")
+                logger.info(f" CUDA VERSION: {cuda_version}")
+                logger.info(" Performance: 5-10x faster than CPU")
             else:
-                logger.info("🖥️ Running on CPU")
+                logger.info("Running on CPU")
             
             # Initialize FaceAnalysis with RetinaFace detector and ArcFace recognizer
             self.insightface_app = FaceAnalysis(
@@ -78,11 +78,11 @@ class FacePipeline:
                 providers=['CUDAExecutionProvider', 'CPUExecutionProvider']
             )
             self.insightface_app.prepare(ctx_id=0, det_size=(640, 640))
-            logger.info("✅ InsightFace (RetinaFace + ArcFace) initialized successfully on GPU!")
+            logger.info(" InsightFace (RetinaFace + ArcFace) initialized successfully on GPU!")
             
         except Exception as e:
-            logger.error(f"❌ Failed to initialize InsightFace: {e}")
-            logger.info("🔄 Falling back to DeepFace with RetinaFace")
+            logger.error(f" Failed to initialize InsightFace: {e}")
+            logger.info(" Falling back to DeepFace with RetinaFace")
             self.insightface_app = None
 
     def save_student_image(self, subject_id, roll, data_url):
@@ -124,11 +124,11 @@ class FacePipeline:
             faces = self.insightface_app.get(img)
             
             if len(faces) == 0:
-                logger.warning(f"❌ No face detected in {img_path}")
+                logger.warning(f" No face detected in {img_path}")
                 return None
             
             if len(faces) > 1:
-                logger.warning(f"⚠️ Multiple faces detected in {img_path}, using first face")
+                logger.warning(f" Multiple faces detected in {img_path}, using first face")
             
             # Get embedding from the first face using ArcFace
             face = faces[0]
@@ -136,11 +136,11 @@ class FacePipeline:
             
             # Normalize embedding
             embedding = embedding / np.linalg.norm(embedding)
-            logger.debug(f"✅ Successfully processed image with InsightFace")
+            logger.debug(f" Successfully processed image with InsightFace")
             return embedding
             
         except Exception as e:
-            logger.warning(f"⚠️ InsightFace failed for {img_path}: {str(e)}")
+            logger.warning(f" InsightFace failed for {img_path}: {str(e)}")
             return None
 
     def process_single_image_deepface(self, img_path, config):
@@ -163,14 +163,14 @@ class FacePipeline:
             if isinstance(rep, list) and len(rep) > 0:
                 embedding = np.array(rep[0]['embedding'])
                 embedding = embedding / np.linalg.norm(embedding)
-                logger.debug(f"✅ Successfully processed image with DeepFace")
+                logger.debug(f" Successfully processed image with DeepFace")
                 return embedding
             else:
-                logger.warning(f"❌ No face detected in {img_path}")
+                logger.warning(f" No face detected in {img_path}")
                 return None
                 
         except Exception as e:
-            logger.warning(f"⚠️ DeepFace failed to process {img_path}: {str(e)}")
+            logger.warning(f" DeepFace failed to process {img_path}: {str(e)}")
             # Clear session on error
             tf.keras.backend.clear_session()
             return None
@@ -184,7 +184,7 @@ class FacePipeline:
                 return embedding
         
         # Fallback to DeepFace
-        logger.info(f"🔄 Falling back to DeepFace for {img_path}")
+        logger.info(f" Falling back to DeepFace for {img_path}")
         return self.process_single_image_deepface(img_path, config)
 
     def train_subject_optimized(self, subject_id, mode='high_quality'):
@@ -208,9 +208,9 @@ class FacePipeline:
         if not students:
             return {'status': 'error', 'message': 'No students found with images'}
         
-        logger.info(f"🚀 Starting {mode} training for {len(students)} students")
-        logger.info(f"📊 Using RetinaFace + ArcFace (InsightFace)")
-        logger.info(f"🎯 Training Mode: {mode.upper()} - {config['images_per_student']} images per student")
+        logger.info(f" Starting {mode} training for {len(students)} students")
+        logger.info(f" Using RetinaFace + ArcFace (InsightFace)")
+        logger.info(f" Training Mode: {mode.upper()} - {config['images_per_student']} images per student")
         
         total_processed = 0
         successful_students = 0
@@ -218,20 +218,20 @@ class FacePipeline:
         # Process students with progress logging and memory management
         for i, roll in enumerate(students):
             try:
-                logger.info(f"🎯 Processing student {i+1}/{len(students)}: {roll}")
+                logger.info(f" Processing student {i+1}/{len(students)}: {roll}")
                 
                 roll_path = os.path.join(subject_path, roll)
                 image_paths = list(Path(roll_path).glob('*.jpg'))
                 
                 if not image_paths:
-                    logger.warning(f"❌ No images found for {roll}")
+                    logger.warning(f" No images found for {roll}")
                     continue
                 
                 # Select images for processing
                 sample_size = min(config['images_per_student'], len(image_paths))
                 sample_paths = image_paths[:sample_size]
                 
-                logger.info(f"   📸 Processing {len(sample_paths)} images for {roll}")
+                logger.info(f"    Processing {len(sample_paths)} images for {roll}")
                 
                 # Process this student's images
                 embeddings = []
@@ -249,7 +249,7 @@ class FacePipeline:
                         continue
                 
                 if embeddings:
-                    # Create robust embedding using mean of all embeddings
+                    #  robust embedding using mean of all embeddings
                     embeddings_array = np.array(embeddings)
                     
                     # Use mean for better representation
@@ -259,15 +259,15 @@ class FacePipeline:
                     encodings[roll] = final_embedding
                     successful_students += 1
                     
-                    logger.info(f"   ✅ {roll}: {successful_images}/{len(sample_paths)} images successful")
+                    logger.info(f"    {roll}: {successful_images}/{len(sample_paths)} images successful")
                 else:
-                    logger.warning(f"   ❌ {roll}: No valid face embeddings found")
+                    logger.warning(f"    {roll}: No valid face embeddings found")
                 
                 # Clear session after each student to free memory
                 tf.keras.backend.clear_session()
                     
             except Exception as e:
-                logger.error(f"💥 Error processing student {roll}: {e}")
+                logger.error(f" Error processing student {roll}: {e}")
                 tf.keras.backend.clear_session()
                 continue
 
@@ -276,9 +276,9 @@ class FacePipeline:
             out_file = os.path.join(self.enc_dir, f'subject_{subject_id}_enc.pkl')
             with open(out_file, 'wb') as f:
                 pickle.dump(encodings, f)
-            logger.info(f"💾 Saved encodings for {len(encodings)} students to {out_file}")
+            logger.info(f"Saved encodings for {len(encodings)} students to {out_file}")
         else:
-            logger.error("💥 No encodings were generated - training failed")
+            logger.error(" No encodings were generated - training failed")
 
         training_time = time.time() - start_time
         
@@ -300,11 +300,11 @@ class FacePipeline:
         }
         
         if successful_students > 0:
-            result['message'] = f'✅ Training successful! {successful_students} students trained in {training_time:.1f}s'
+            result['message'] = f' Training successful! {successful_students} students trained in {training_time:.1f}s'
         else:
-            result['message'] = '❌ Training failed - no students could be processed'
+            result['message'] = ' Training failed - no students could be processed'
         
-        logger.info(f"🎉 Training completed: {result}")
+        logger.info(f" Training completed: {result}")
         return result
 
     def recognize_with_insightface(self, img_path, known_encodings, config):
@@ -322,7 +322,7 @@ class FacePipeline:
             faces = self.insightface_app.get(img)
             
             if len(faces) == 0:
-                logger.info("❌ NO FACE DETECTED by RetinaFace")
+                logger.info(" NO FACE DETECTED by RetinaFace")
                 return [{
                     'roll': None,
                     'similarity': 0.0,
@@ -332,7 +332,7 @@ class FacePipeline:
                 }]
             
             if len(faces) > 1:
-                logger.warning("⚠️ Multiple faces detected by RetinaFace")
+                logger.warning(" Multiple faces detected by RetinaFace")
                 return [{'warning': 'multiple_faces', 'message': 'Multiple faces detected. Please ensure only one student is in frame.'}]
             
             # Get embedding from the detected face using ArcFace
@@ -355,15 +355,15 @@ class FacePipeline:
             
             # Sort matches by similarity for debugging
             all_matches.sort(key=lambda x: x['similarity'], reverse=True)
-            logger.info(f"🔍 Recognition - Top matches: {all_matches[:3]}")
-            logger.info(f"🔍 Best match: {best_match} with similarity: {best_similarity:.3f}")
+            logger.info(f" Recognition - Top matches: {all_matches[:3]}")
+            logger.info(f" Best match: {best_match} with similarity: {best_similarity:.3f}")
             
             # Apply recognition thresholds
             recognition_threshold = config['recognition_threshold']
             min_confidence = config['min_confidence']
             
             if best_match and best_similarity >= recognition_threshold:
-                logger.info(f"✅ HIGH CONFIDENCE MATCH: {best_match} (similarity: {best_similarity:.3f})")
+                logger.info(f" HIGH CONFIDENCE MATCH: {best_match} (similarity: {best_similarity:.3f})")
                 return [{
                     'roll': best_match,
                     'similarity': float(best_similarity),
@@ -373,7 +373,7 @@ class FacePipeline:
                     'message': f'Recognized: {best_match}'
                 }]
             elif best_match and best_similarity >= min_confidence:
-                logger.info(f"⚠️ MEDIUM CONFIDENCE MATCH: {best_match} (similarity: {best_similarity:.3f})")
+                logger.info(f" MEDIUM CONFIDENCE MATCH: {best_match} (similarity: {best_similarity:.3f})")
                 return [{
                     'roll': best_match,
                     'similarity': float(best_similarity),
@@ -541,5 +541,5 @@ class FacePipeline:
             'max_images': int(max(counts)) if counts else 0,
             'high_quality_ready': len([c for c in counts if c >= 20]),
             'faster_quality_ready': len([c for c in counts if c >= 12]),
-            'recommendation': '✅ High accuracy mode ready' if len([c for c in counts if c >= 20]) > 0 else '⚠️ Add more training images for best accuracy'
+            'recommendation': ' High accuracy mode ready' if len([c for c in counts if c >= 20]) > 0 else ' Add more training images for best accuracy'
         }
