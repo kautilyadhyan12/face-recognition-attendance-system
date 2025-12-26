@@ -1,4 +1,4 @@
-# advanced_liveness.py
+
 import cv2
 import numpy as np
 import time
@@ -90,11 +90,11 @@ class AdvancedLivenessDetector:
         # Calculate confidence
         confidence = 0.0
         
-        # Factor 1: Blink detection (60%)
+        #  Blink detection (60%)
         blink_score = min(self.total_blinks / 2.0, 1.0) * 0.6
         confidence += blink_score
         
-        # Factor 2: Time-based (40%)
+        # Time-based (40%)
         time_score = min(elapsed_time / 2.0, 0.4)
         confidence += time_score
         
@@ -103,11 +103,11 @@ class AdvancedLivenessDetector:
         
         # Generate message
         if is_live:
-            message = "✅ Live person verified"
+            message = " Live person verified"
         elif self.total_blinks < 2:
-            message = "👁️ Please blink naturally"
+            message = " Please blink naturally"
         else:
-            message = "🔍 Verifying liveness..."
+            message = " Verifying liveness..."
         
         return {
             'live': is_live,
