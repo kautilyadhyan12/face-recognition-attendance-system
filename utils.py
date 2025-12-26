@@ -1,4 +1,4 @@
-# utils.py
+
 import os
 
 def ensure_instance_dirs(paths):
