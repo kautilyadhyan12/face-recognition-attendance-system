@@ -1,4 +1,4 @@
-/* static/css/styles.css - BEAUTIFUL REDESIGN */
+
 :root {
   --primary: #4361ee;
   --secondary: #3a0ca3;
@@ -517,16 +517,16 @@ body {
   background: linear-gradient(135deg, #eff6ff, #dbeafe);
 }
 
-/* Beautiful notification styles - FIXED Z-INDEX */
+/* Beautiful notification  */
 .beautiful-notification {
   position: fixed;
-  top: 90px; /* Positioned below navbar */
+  top: 90px;
   right: 20px;
   padding: 16px 20px;
   border-radius: 12px;
   color: white;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  z-index: 9999; /* Increased to be above navbar */
+  z-index: 9999; 
   transform: translateX(100%);
   transition: transform 0.3s ease;
   max-width: 350px;
@@ -555,7 +555,7 @@ body {
   background: linear-gradient(135deg, #3b82f6, #1d4ed8);
 }
 
-/* Camera container enhancements */
+/* Camera container */
 .camera-wrapper {
   position: relative;
   border-radius: 20px;
