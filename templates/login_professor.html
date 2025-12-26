@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="login-container animate-fade-in">
+  <div class="login-card animate-card">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <div class="w-20 h-20 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <i class="fas fa-chalkboard-teacher text-white text-2xl"></i>
+      </div>
+      <h2 class="text-3xl font-bold text-gray-800 mb-2">Professor Login</h2>
+      <p class="text-gray-600">Access your teaching dashboard</p>
+    </div>
+
+    <!-- Login Form -->
+    <form method="POST" class="space-y-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-university mr-2 text-blue-500"></i>Department
+        </label>
+        <select name="department" class="form-control w-full" required id="departmentSelect">
+          <option value="">Select department</option>
+          {% for d in departments %}
+          <option value="{{ d.name }}">{{ d.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-id-card mr-2 text-green-500"></i>Professor ID
+        </label>
+        <select name="prof_id" class="form-control w-full" required id="professorSelect">
+          <option value="">Select Professor ID</option>
+          {% for prof in professors %}
+          <option value="{{ prof.prof_id }}" data-department="{{ prof.department.name }}">
+            {{ prof.prof_id }} - {{ prof.username }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-user mr-2 text-purple-500"></i>Professor Name
+        </label>
+        <input name="username" required class="form-control w-full" placeholder="Professor name will auto-fill" id="professorName" readonly />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-lock mr-2 text-red-500"></i>Password
+        </label>
+        <input name="password" type="password" required class="form-control w-full" placeholder="Enter your password" />
+      </div>
+
+      <button class="btn-animate w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300">
+        <i class="fas fa-sign-in-alt mr-2"></i>Login to Dashboard
+      </button>
+    </form>
+
+    <!-- Additional Info -->
+    <div class="mt-8 pt-6 border-t border-gray-200">
+      <div class="bg-green-50 rounded-lg p-4">
+        <div class="flex items-start">
+          <i class="fas fa-info-circle text-green-500 mt-1 mr-3"></i>
+          <div>
+            <h4 class="font-semibold text-green-800 mb-1">Professor Access</h4>
+            <p class="text-green-700 text-sm">
+              Use your department credentials provided by your institution. Contact admin if you need access.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- University Branding -->
+    <div class="mt-8 text-center">
+      <div class="flex items-center justify-center space-x-2 text-gray-500">
+        <img src="{{ url_for('static', filename='img/Tezpur_University_logo.png') }}" alt="Tezpur University" class="h-6 w-auto">
+        <span class="text-sm">Tezpur University Faculty Portal</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const departmentSelect = document.getElementById('departmentSelect');
+  const professorSelect = document.getElementById('professorSelect');
+  const professorName = document.getElementById('professorName');
+  
+  // Filter professors when department changes
+  departmentSelect.addEventListener('change', function() {
+    const selectedDept = this.value;
+    
+    // Reset professor selection
+    professorSelect.value = '';
+    professorName.value = '';
+    
+    // Show only professors from selected department
+    Array.from(professorSelect.options).forEach(option => {
+      if (option.value === '') return; // Keep the default option
+      
+      if (option.getAttribute('data-department') === selectedDept) {
+        option.style.display = 'block';
+      } else {
+        option.style.display = 'none';
+      }
+    });
+  });
+  
+  // Auto-fill professor name when professor is selected
+  professorSelect.addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    if (selectedOption.value && selectedOption.textContent) {
+      // Extract professor name from the option text (format: "ID - Name")
+      const professorInfo = selectedOption.textContent.split(' - ');
+      if (professorInfo.length > 1) {
+        professorName.value = professorInfo[1];
+      }
+    } else {
+      professorName.value = '';
+    }
+  });
+});
+</script>
+
+<style>
+.form-control:focus {
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+</style>
+{% endblock %}

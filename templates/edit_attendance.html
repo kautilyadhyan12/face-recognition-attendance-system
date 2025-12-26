@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h3>Edit Attendance — {{ subject.name }}</h3>
+  <form method="post">
+    <div class="mb-3">
+      <label>Student</label>
+      <input class="form-control" value="{{ attendance.student.name }} ({{ attendance.student.roll }})" disabled>
+    </div>
+    <div class="mb-3">
+      <label>Status</label>
+      <select name="status" class="form-control">
+        <option value="present" {% if attendance.status=='present' %}selected{% endif %}>Present</option>
+        <option value="absent" {% if attendance.status=='absent' %}selected{% endif %}>Absent</option>
+        <option value="late" {% if attendance.status=='late' %}selected{% endif %}>Late</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label>Reason / Note</label>
+      <textarea name="reason" class="form-control" rows="4">{{ attendance.reason or '' }}</textarea>
+    </div>
+    <button class="btn btn-primary">Save</button>
+    <a href="{{ url_for('view_attendance', subject_id=subject.id) }}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

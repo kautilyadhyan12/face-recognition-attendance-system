@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="login-container animate-fade-in">
+  <div class="login-card animate-card">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <i class="fas fa-university text-white text-2xl"></i>
+      </div>
+      <h2 class="text-3xl font-bold text-gray-800 mb-2">Department Login</h2>
+      <p class="text-gray-600">Administrative access portal</p>
+    </div>
+
+    <!-- Login Form -->
+    <form method="POST" class="space-y-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-building mr-2 text-blue-500"></i>Department Name
+        </label>
+        <select name="name" class="form-control w-full" required>
+          <option value="">Select Department</option>
+          {% for dept in departments %}
+          <option value="{{ dept.name }}" {% if request.form.get('name') == dept.name %}selected{% endif %}>
+            {{ dept.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-key mr-2 text-purple-500"></i>Password
+        </label>
+        <input name="password" type="password" class="form-control w-full" placeholder="Enter your password" required>
+      </div>
+
+      <button type="submit" class="btn-animate w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-3 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300">
+        <i class="fas fa-sign-in-alt mr-2"></i>Login to Dashboard
+      </button>
+    </form>
+
+    <!-- Registration Link -->
+    <div class="mt-6 text-center">
+      <p class="text-gray-600">
+        Don't have an account? 
+        <a href="{{ url_for('register_department') }}" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors">
+          Register here
+        </a>.
+      </p>
+    </div>
+
+    <!-- Additional Info -->
+    <div class="mt-8 pt-6 border-t border-gray-200">
+      <div class="bg-blue-50 rounded-lg p-4">
+        <div class="flex items-start">
+          <i class="fas fa-shield-alt text-blue-500 mt-1 mr-3"></i>
+          <div>
+            <h4 class="font-semibold text-blue-800 mb-1">Administrative Access</h4>
+            <p class="text-blue-700 text-sm">
+              Department login provides access to manage professors, subjects, and student data.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- University Branding -->
+    <div class="mt-8 text-center">
+      <div class="flex items-center justify-center space-x-2 text-gray-500">
+        <img src="{{ url_for('static', filename='img/Tezpur_University_logo.png') }}" alt="Tezpur University" class="h-6 w-auto">
+        <span class="text-sm">Tezpur University Admin Portal</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.form-control:focus {
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+</style>
+{% endblock %}

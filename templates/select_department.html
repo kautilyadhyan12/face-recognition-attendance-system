@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="login-container animate-fade-in">
+  <div class="login-card animate-card">
+    <div class="text-center mb-8">
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">Select Your Course</h2>
+      <p class="text-gray-600">Multiple courses found for roll number: <strong>{{ roll }}</strong></p>
+    </div>
+
+    <div class="space-y-4">
+      {% for student in students %}
+      <a href="{{ url_for('login_specific_student', student_id=student.id) }}" 
+         class="block p-4 border border-gray-300 rounded-lg hover:bg-blue-50 transition-colors duration-200">
+        <div class="font-semibold text-lg text-blue-600">{{ student.subject.name }}</div>
+        <div class="text-sm text-gray-600 mt-1">
+          <strong>Department:</strong> {{ student.department.name }}<br>
+          <strong>Branch:</strong> {{ student.branch }}<br>
+          <strong>Course:</strong> {{ student.course }}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    <div class="mt-6 text-center">
+      <a href="{{ url_for('login_student') }}" class="text-blue-600 hover:text-blue-800">
+        ← Back to Login
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

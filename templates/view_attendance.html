@@ -1,0 +1,689 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>📊 Attendance Records — {{ subject.name }}</h3>
+        <div>
+            <button class="btn btn-outline-secondary" onclick="toggleView()" id="toggleViewBtn">
+                📅 Switch to Calendar View
+            </button>
+            <a href="?format=csv" class="btn btn-outline-secondary">⬇ Export CSV</a>
+        </div>
+    </div>
+
+    <!-- List View -->
+    <div id="listView">
+        <!-- Date Filter -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Filter by Date Range</h5>
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" name="start" value="{{ request.args.get('start','') }}" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">End Date</label>
+                        <input type="date" name="end" value="{{ request.args.get('end','') }}" class="form-control" />
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">Apply Filter</button>
+                        <a href="{{ url_for('view_attendance', subject_id=subject.id) }}" class="btn btn-outline-secondary">Clear</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if rows %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <th>Roll</th>
+                        <th>Status</th>
+                        <th>Confidence</th>
+                        <th>Edited</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in rows %}
+                    <tr {% if r.edited %} class="table-warning" {% endif %}>
+                        <td>{{ r.class_session.date }}</td>
+                        <td>{{ r.student.name }}</td>
+                        <td>{{ r.student.roll }}</td>
+                        <td>
+                            <span class="badge {% if r.status == 'present' %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ r.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if r.confidence is not none %}
+                                {{ "%.3f"|format(r.confidence) }}
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if r.edited %}
+                                <span class="badge bg-warning text-dark">Edited</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('edit_attendance', subject_id=subject.id, attendance_id=r.id) }}"
+                               class="btn btn-sm btn-outline-warning">Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-3 text-muted">
+            Showing {{ rows|length }} attendance records
+            {% if request.args.get('start') or request.args.get('end') %}
+                for selected date range
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center">
+            <h5>No attendance records found</h5>
+            <p class="mb-0">
+                {% if request.args.get('start') or request.args.get('end') %}
+                    No records found for the selected date range.
+                {% else %}
+                    No attendance records available yet. Start marking attendance to see records here.
+                {% endif %}
+            </p>
+            <div class="mt-3">
+                <a href="{{ url_for('mark_attendance_page', subject_id=subject.id) }}" class="btn btn-primary">
+                    📷 Mark Attendance
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Calendar View (Hidden by default) -->
+    <div id="calendarView" style="display: none;">
+        <div class="row">
+            <!-- Calendar Section -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Class Calendar</h5>
+                        <div>
+                            <span class="badge bg-success me-2">● Classes Conducted</span>
+                            <span class="badge bg-secondary">● No Class</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Month Navigation -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <button class="btn btn-outline-primary btn-sm" id="prevMonth">← Previous</button>
+                            <h4 id="currentMonth" class="mb-0"></h4>
+                            <button class="btn btn-outline-primary btn-sm" id="nextMonth">Next →</button>
+                        </div>
+                        
+                        <!-- Calendar -->
+                        <div id="calendar" class="calendar-grid"></div>
+                        
+                        <!-- Statistics -->
+                        <div class="mt-4 row text-center">
+                            <div class="col-md-4">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body py-2">
+                                        <h6 class="card-title mb-0">Total Classes</h6>
+                                        <h4 class="mb-0">{{ total_classes }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body py-2">
+                                        <h6 class="card-title mb-0">This Month</h6>
+                                        <h4 class="mb-0" id="monthClasses">0</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body py-2">
+                                        <h6 class="card-title mb-0">Conducted %</h6>
+                                        <h4 class="mb-0" id="attendancePercentage">0%</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Date Details Section -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Date Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="dateDetails">
+                            <p class="text-muted text-center">Select a date to view details</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+.calendar-day {
+    border: 1px solid #dee2e6;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.3s;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.calendar-day:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.05);
+}
+.calendar-day.has-class {
+    background-color: #d1fae5;
+    border-color: #10b981;
+}
+.calendar-day.selected {
+    background-color: #3b82f6 !important;
+    color: white !important;
+    border-color: #2563eb !important;
+}
+.calendar-day.other-month {
+    color: #6c757d;
+    background-color: #f8f9fa;
+}
+.day-number {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+.day-info {
+    font-size: 0.8em;
+    margin-top: 5px;
+}
+.calendar-day-header {
+    font-weight: bold;
+    background-color: #f8f9fa;
+}
+
+/* Student Details Styles */
+.student-details {
+    transition: all 0.3s ease;
+    border-left: 4px solid #007bff;
+    background-color: #f8f9fa;
+    border-radius: 0.375rem;
+}
+.student-details .table {
+    margin-bottom: 0;
+    font-size: 0.875rem;
+}
+.list-group-item {
+    border-radius: 0.375rem !important;
+    margin-bottom: 0.5rem;
+}
+.details-loading {
+    text-align: center;
+    padding: 1rem;
+}
+</style>
+
+<script>
+let currentDate = new Date();
+let classDates = {{ class_dates|tojson }};
+let currentView = 'list'; // 'list' or 'calendar'
+
+// Toggle functionality for student details
+function toggleStudentDetails(studentId, dateStr) {
+    const detailsElement = document.getElementById(`student-details-${studentId}`);
+    
+    if (detailsElement) {
+        // If details are already shown, hide them
+        if (detailsElement.style.display === 'block') {
+            detailsElement.style.display = 'none';
+            // Update button text
+            const buttons = document.querySelectorAll(`button[onclick*="toggleStudentDetails(${studentId}"`);
+            buttons.forEach(button => {
+                button.textContent = 'Details';
+                button.classList.remove('btn-secondary');
+                button.classList.add('btn-outline-info');
+            });
+        } else {
+            // If hidden, show them
+            detailsElement.style.display = 'block';
+            // Update button text
+            const buttons = document.querySelectorAll(`button[onclick*="toggleStudentDetails(${studentId}"`);
+            buttons.forEach(button => {
+                button.textContent = 'Hide Details';
+                button.classList.remove('btn-outline-info');
+                button.classList.add('btn-secondary');
+            });
+            // Load details if not already loaded
+            if (!detailsElement.hasAttribute('data-loaded')) {
+                loadStudentDetails(studentId, dateStr, detailsElement);
+            }
+        }
+    } else {
+        // First time clicking - create and show details
+        showStudentDetails(studentId, dateStr);
+    }
+}
+
+function showStudentDetails(studentId, dateStr) {
+    // Create new details container
+    const detailsContainer = document.createElement('div');
+    detailsContainer.id = `student-details-${studentId}`;
+    detailsContainer.className = 'student-details mt-2 p-3 rounded border';
+    detailsContainer.style.display = 'block';
+    detailsContainer.innerHTML = `
+        <div class="details-loading">
+            <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <span class="ms-2">Loading details...</span>
+        </div>
+    `;
+    
+    // Find the button that was clicked and insert details after its parent container
+    const buttons = document.querySelectorAll(`button[onclick*="toggleStudentDetails(${studentId}"`);
+    if (buttons.length > 0) {
+        const button = buttons[0];
+        const parentContainer = button.closest('.list-group-item');
+        parentContainer.parentNode.insertBefore(detailsContainer, parentContainer.nextSibling);
+        
+        // Update button text and style
+        button.textContent = 'Hide Details';
+        button.classList.remove('btn-outline-info');
+        button.classList.add('btn-secondary');
+    }
+    
+    // Load student details
+    loadStudentDetails(studentId, dateStr, detailsContainer);
+}
+
+function loadStudentDetails(studentId, dateStr, detailsContainer) {
+    fetch(`/prof/{{ subject.id }}/student_attendance/${studentId}`)
+        .then(response => response.json())
+        .then(data => {
+            let html = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Roll No:</strong> ${data.student_roll}</p>
+                        <p><strong>Total Classes:</strong> ${data.total_classes}</p>
+                        <p><strong>Classes Attended:</strong> ${data.classes_attended}</p>
+                        <p><strong>Attendance %:</strong> 
+                            <span class="badge ${data.attendance_percentage >= 75 ? 'bg-success' : 'bg-danger'}">
+                                ${data.attendance_percentage}%
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div class="progress-bar ${data.attendance_percentage >= 75 ? 'bg-success' : 'bg-danger'}" 
+                                 style="width: ${Math.min(data.attendance_percentage, 100)}%">
+                                ${data.attendance_percentage}%
+                            </div>
+                        </div>
+                        <p><strong>Status:</strong> 
+                            ${data.attendance_percentage >= 75 || data.eligible_override ? 
+                                '<span class="text-success">✅ Eligible</span>' : 
+                                '<span class="text-danger">❌ Not Eligible</span>'
+                            }
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            if (data.recent_attendance && data.recent_attendance.length > 0) {
+                html += `
+                    <h6 class="mt-3 border-top pt-2">Recent Attendance:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                data.recent_attendance.forEach(record => {
+                    html += `
+                        <tr>
+                            <td>${record.date}</td>
+                            <td>
+                                <span class="badge ${record.status === 'present' ? 'bg-success' : 'bg-danger'}">
+                                    ${record.status}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+            
+            // Add close button
+            html += `
+                <div class="text-center mt-3 border-top pt-2">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="toggleStudentDetails(${studentId}, '${dateStr}')">
+                        Close Details
+                    </button>
+                </div>
+            `;
+            
+            detailsContainer.innerHTML = html;
+            detailsContainer.setAttribute('data-loaded', 'true');
+        })
+        .catch(error => {
+            detailsContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <strong>Error:</strong> Failed to load student details
+                    <br><small>${error.message}</small>
+                </div>
+                <div class="text-center mt-2">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="toggleStudentDetails(${studentId}, '${dateStr}')">
+                        Close
+                    </button>
+                </div>
+            `;
+        });
+}
+
+function toggleView() {
+    const listView = document.getElementById('listView');
+    const calendarView = document.getElementById('calendarView');
+    const toggleBtn = document.getElementById('toggleViewBtn');
+    
+    if (currentView === 'list') {
+        listView.style.display = 'none';
+        calendarView.style.display = 'block';
+        toggleBtn.textContent = '📋 Switch to List View';
+        currentView = 'calendar';
+        renderCalendar();
+    } else {
+        listView.style.display = 'block';
+        calendarView.style.display = 'none';
+        toggleBtn.textContent = '📅 Switch to Calendar View';
+        currentView = 'list';
+    }
+}
+
+function renderCalendar() {
+    const calendar = document.getElementById('calendar');
+    const monthYear = document.getElementById('currentMonth');
+    
+    // Set month header
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                   'July', 'August', 'September', 'October', 'November', 'December'];
+    monthYear.textContent = `${months[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+    
+    // Clear calendar
+    calendar.innerHTML = '';
+    
+    // Add day headers
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    days.forEach(day => {
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'calendar-day calendar-day-header text-center fw-bold';
+        dayHeader.textContent = day;
+        calendar.appendChild(dayHeader);
+    });
+    
+    // Get first day of month and days in month
+    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    
+    // Add empty days for previous month
+    for (let i = 0; i < firstDay.getDay(); i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day other-month';
+        calendar.appendChild(emptyDay);
+    }
+    
+    // Add days of current month
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        
+        const dateStr = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+        const hasClass = classDates.includes(dateStr);
+        
+        if (hasClass) {
+            dayElement.classList.add('has-class');
+        }
+        
+        dayElement.innerHTML = `
+            <div class="day-number">${day}</div>
+            ${hasClass ? '<div class="day-info">📚 Class</div>' : '<div class="day-info">&nbsp;</div>'}
+        `;
+        
+        dayElement.onclick = () => {
+            // Remove selected class from all days
+            document.querySelectorAll('.calendar-day').forEach(dayEl => {
+                dayEl.classList.remove('selected');
+            });
+            // Add selected class to clicked day
+            dayElement.classList.add('selected');
+            showDateDetails(dateStr);
+        };
+        calendar.appendChild(dayElement);
+    }
+    
+    updateStatistics();
+}
+
+function showDateDetails(dateStr) {
+    console.log('Fetching details for date:', dateStr);
+    
+    // Clear any existing student details
+    document.querySelectorAll('.student-details').forEach(el => el.remove());
+    
+    fetch(`/prof/{{ subject.id }}/attendance_date/${dateStr}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 RAW DATA RECEIVED:', data);
+            
+            const detailsDiv = document.getElementById('dateDetails');
+            
+            let html = `<h6>📅 ${dateStr}</h6>`;
+            
+            // PROPER NULL CHECK AND ARRAY VALIDATION
+            if (data.attendance_records && Array.isArray(data.attendance_records) && data.attendance_records.length > 0) {
+                html += `<p><strong>Total Present:</strong> ${data.present_count}/${data.total_students}</p>`;
+                html += `<p><strong>Records Found:</strong> ${data.attendance_records.length}</p>`;
+                html += `
+                    <div class="mt-3">
+                        <h6>Attendance List (${data.attendance_records.length} students):</h6>
+                        <div class="list-group">
+                `;
+                
+                // Sort records by student name
+                const sortedRecords = data.attendance_records.sort((a, b) => 
+                    a.student_name.localeCompare(b.student_name)
+                );
+                
+                console.log('🎯 SORTED RECORDS:', sortedRecords);
+                
+                sortedRecords.forEach((record, index) => {
+                    console.log(`👤 Processing student ${index + 1}:`, record);
+                    
+                    const statusBadge = record.status === 'present' ? 
+                        '<span class="badge bg-success">Present</span>' : 
+                        '<span class="badge bg-danger">Absent</span>';
+                    
+                    html += `
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${record.student_name}</strong><br>
+                                <small class="text-muted">${record.student_roll}</small>
+                            </div>
+                            <div>
+                                ${statusBadge}
+                                <button class="btn btn-sm btn-outline-warning ms-2" onclick="editAttendance(${record.attendance_id}, '${dateStr}')">
+                                    Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-info ms-1" onclick="toggleStudentDetails(${record.student_id}, '${dateStr}')">
+                                    Details
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <p class="text-muted">No attendance records found for this date.</p>
+                    <button class="btn btn-primary btn-sm" onclick="createSession('${dateStr}')">
+                        ➕ Create Class Session
+                    </button>
+                `;
+            }
+            
+            detailsDiv.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('❌ Error fetching date details:', error);
+            const detailsDiv = document.getElementById('dateDetails');
+            detailsDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <strong>Error:</strong> Failed to load attendance data for ${dateStr}
+                    <br><small>${error.message}</small>
+                </div>
+            `;
+        });
+}
+
+// Add these helper functions for session management
+function createSession(dateStr) {
+    if (confirm(`Create a class session for ${dateStr}?`)) {
+        fetch(`/prof/{{ subject.id }}/create_session`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({date: dateStr})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showNotification('Class session created successfully!', 'success');
+                showDateDetails(dateStr); // Refresh the details
+                // Refresh the calendar to show new class
+                location.reload();
+            } else {
+                showNotification('Failed to create session: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error creating session: ' + error.message, 'error');
+        });
+    }
+}
+
+function editAttendance(attendanceId, dateStr) {
+    const newStatus = prompt('Change status to (present/absent):');
+    if (newStatus && ['present', 'absent'].includes(newStatus.toLowerCase())) {
+        fetch(`/prof/{{ subject.id }}/update_attendance/${attendanceId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({status: newStatus.toLowerCase()})
+        }).then(() => {
+            showDateDetails(dateStr);
+            showNotification('Attendance updated successfully!', 'success');
+        });
+    }
+}
+
+function updateStatistics() {
+    const currentMonth = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}`;
+    const monthClasses = classDates.filter(date => date.startsWith(currentMonth)).length;
+    document.getElementById('monthClasses').textContent = monthClasses;
+    
+    const totalPossibleClasses = 20;
+    const attendancePercentage = Math.round((monthClasses / totalPossibleClasses) * 100);
+    document.getElementById('attendancePercentage').textContent = attendancePercentage + '%';
+}
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transition-all duration-300 ${
+        type === 'success' ? 'bg-green-500 text-white' :
+        type === 'error' ? 'bg-red-500 text-white' :
+        type === 'warning' ? 'bg-yellow-500 text-white' :
+        'bg-blue-500 text-white'
+    }`;
+    notification.textContent = message;
+    notification.style.transform = 'translateX(100%)';
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Event listeners
+document.getElementById('prevMonth').addEventListener('click', () => {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+});
+
+document.getElementById('nextMonth').addEventListener('click', () => {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+});
+
+// Initialize with list view by default
+document.addEventListener('DOMContentLoaded', function() {
+    // List view is visible by default, calendar view is hidden
+    console.log('Calendar initialized. Class dates:', classDates);
+});
+</script>
+{% endblock %}

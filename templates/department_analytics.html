@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="bg-white p-6 rounded shadow">
+  <h2 class="text-2xl font-semibold mb-4">{{ department.name }} Department — Attendance Analytics</h2>
+
+  {% if analytics %}
+  <table class="table table-bordered w-full">
+    <thead class="bg-gray-100">
+      <tr>
+        <th>Student Name</th>
+        <th>Roll</th>
+        <th>Subject</th>
+        <th>Total Classes</th>
+        <th>Attended</th>
+        <th>%</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in analytics %}
+      <tr {% if a.perc < 75 %} class="bg-red-100 text-red-700" {% endif %}>
+        <td>{{ a.student.name }}</td>
+        <td>{{ a.student.roll }}</td>
+        <td>{{ a.subject.name }}</td>
+        <td>{{ a.total_classes }}</td>
+        <td>{{ a.attended }}</td>
+        <td>{{ "%.2f"|format(a.perc) }}</td>
+        <td>
+          {% if a.eligible %}
+            <span class="text-green-600 font-semibold">Eligible ✅</span>
+          {% else %}
+            <span class="text-red-600 font-semibold">Not Eligible ❌</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if not a.eligible %}
+            <form action="{{ url_for('override_student_eligibility', student_id=a.student.id) }}" method="POST">
+              <button class="bg-blue-600 text-white px-2 py-1 rounded text-sm">Allow</button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No attendance data available yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

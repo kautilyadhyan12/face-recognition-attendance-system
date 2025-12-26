@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="login-container animate-fade-in">
+  <div class="login-card animate-card">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <i class="fas fa-user-graduate text-white text-2xl"></i>
+      </div>
+      <h2 class="text-3xl font-bold text-gray-800 mb-2">Student Login</h2>
+      <p class="text-gray-600">Enter your details to access your dashboard</p>
+    </div>
+
+    <!-- Login Form -->
+    <form method="POST" class="space-y-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-id-card mr-2 text-blue-500"></i>Roll Number
+        </label>
+        <input 
+          name="roll" 
+          type="text" 
+          class="form-control w-full" 
+          placeholder="Enter your Roll No (e.g., CSM25035)" 
+          required
+        >
+      </div>
+
+      <button 
+        type="submit" 
+        class="btn-animate w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+      >
+        <i class="fas fa-sign-in-alt mr-2"></i>Login to Dashboard
+      </button>
+    </form>
+
+    <!-- Additional Info -->
+    <div class="mt-8 pt-6 border-t border-gray-200">
+      <div class="bg-blue-50 rounded-lg p-4">
+        <div class="flex items-start">
+          <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+          <div>
+            <h4 class="font-semibold text-blue-800 mb-1">Need Help?</h4>
+            <p class="text-blue-700 text-sm">
+              Use your University Roll Number to login. If you're having trouble, contact your professor.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- University Branding -->
+    <div class="mt-8 text-center">
+      <div class="flex items-center justify-center space-x-2 text-gray-500">
+        <img src="{{ url_for('static', filename='img/Tezpur_University_logo.png') }}" alt="Tezpur University" class="h-6 w-auto">
+        <span class="text-sm">Tezpur University Attendance System</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .form-control:focus {
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+  }
+</style>
+{% endblock %}

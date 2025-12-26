@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Face Attendance | Tezpur University</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    
+    <!-- Additional notification styles as backup -->
+    <style>
+      .beautiful-notification {
+        position: fixed !important;
+        top: 90px !important;
+        right: 20px !important;
+        z-index: 9999 !important;
+      }
+    </style>
+  </head>
+
+  <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col font-poppins">
+    <!-- Animated Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      <div class="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+      <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-2000"></div>
+      <div class="absolute top-40 left-1/4 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
+    </div>
+
+    <!-- Fixed Navbar - SOLID BACKGROUND -->
+    <nav class="bg-white shadow-lg border-b border-blue-200 fixed top-0 left-0 right-0 z-50">
+      <div class="container mx-auto px-4 py-3">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center space-x-3">
+            <!-- University Logo -->
+            <div class="flex items-center space-x-3">
+              <img src="{{ url_for('static', filename='img/Tezpur_University_logo.png') }}" 
+                   alt="Tezpur University" 
+                   class="h-10 w-10 object-contain">
+              <a href="{{ url_for('index') }}" class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 transition-all duration-300">
+                Face Attendance
+              </a>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-4">
+            {% if current_user.is_authenticated %}
+              {% if current_user.__class__.__name__ == 'Department' %}
+                <span class="text-sm bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-3 py-1 rounded-full font-medium">
+                  <i class="fas fa-university mr-1"></i> Dept: <strong>{{ current_user.name }}</strong>
+                </span>
+                <a href="{{ url_for('department_logout') }}" class="text-sm bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300">
+                  <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                </a>
+
+              {% elif current_user.__class__.__name__ == 'User' %}
+                <span class="text-sm bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-3 py-1 rounded-full font-medium">
+                  <i class="fas fa-chalkboard-teacher mr-1"></i> Prof: <strong>{{ current_user.username }}</strong>
+                  ({{ current_user.department.name }})
+                </span>
+                <a href="{{ url_for('prof_logout') }}" class="text-sm bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300">
+                  <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                </a>
+
+              {% elif current_user.__class__.__name__ == 'Student' %}
+                <span class="text-sm bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 px-3 py-1 rounded-full font-medium">
+                  <i class="fas fa-user-graduate mr-1"></i> {{ current_user.name }} ({{ current_user.roll }})
+                </span>
+                <a href="{{ url_for('student_logout') }}" class="text-sm bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300">
+                  <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                </a>
+              {% endif %}
+            {% else %}
+              <div class="flex space-x-2">
+                <a href="{{ url_for('login_department') }}" class="text-sm bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-3 py-1 rounded-full hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300">
+                  <i class="fas fa-university mr-1"></i> Dept Login
+                </a>
+                <a href="{{ url_for('login_professor') }}" class="text-sm bg-gradient-to-r from-green-500 to-teal-500 text-white px-3 py-1 rounded-full hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300">
+                  <i class="fas fa-chalkboard-teacher mr-1"></i> Professor
+                </a>
+                <a href="{{ url_for('login_student') }}" class="text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300">
+                  <i class="fas fa-user-graduate mr-1"></i> Student
+                </a>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main content with padding for fixed navbar -->
+    <main class="flex-grow container mx-auto mt-20 px-4 relative z-10 pb-8">
+      <!-- Flash messages -->
+      <div class="w-full max-w-4xl mx-auto mb-6">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, msg in messages %}
+              <div class="p-4 my-2 rounded-xl shadow-lg border-l-4 transform transition-all duration-500 hover:scale-[1.02] animate-fade-in
+                {% if category == 'success' %}
+                  bg-gradient-to-r from-green-50 to-emerald-50 text-green-800 border-green-500
+                {% elif category == 'danger' %}
+                  bg-gradient-to-r from-red-50 to-pink-50 text-red-700 border-red-500
+                {% elif category == 'warning' %}
+                  bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-800 border-yellow-500
+                {% else %}
+                  bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-800 border-blue-500
+                {% endif %}">
+                <div class="flex items-center">
+                  <i class="fas 
+                    {% if category == 'success' %} fa-check-circle 
+                    {% elif category == 'danger' %} fa-exclamation-circle 
+                    {% elif category == 'warning' %} fa-exclamation-triangle 
+                    {% else %} fa-info-circle {% endif %} 
+                    mr-3 text-lg"></i>
+                  <span class="font-medium">{{ msg }}</span>
+                </div>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      </div>
+
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gradient-to-r from-blue-600 to-purple-600 text-white mt-auto">
+      <div class="container mx-auto py-8 px-4">
+        <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+          <!-- University Info -->
+          <div class="flex items-center space-x-3">
+            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center overflow-hidden">
+              <img src="{{ url_for('static', filename='img/Tezpur_University_logo.png') }}" 
+                   alt="Tezpur University" 
+                   class="h-10 w-10 object-contain">
+            </div>
+            <div>
+              <h3 class="font-bold text-lg">Tezpur University</h3>
+              <p class="text-sm opacity-90">Napaam, Tezpur, Assam - 784028</p>
+            </div>
+          </div>
+          
+          <!-- System Info -->
+          <div class="text-center md:text-left">
+            <p class="font-semibold flex items-center justify-center md:justify-start">
+              <i class="fas fa-graduation-cap mr-2"></i>Face Recognition Attendance System
+            </p>
+            <p class="text-sm opacity-90 mt-1">
+              Transforming education through innovative technology
+            </p>
+          </div>
+          
+          <!-- Copyright -->
+          <div class="text-center md:text-right">
+            <p class="text-sm opacity-90">
+              &copy; {{ datetime.utcnow().year }} Tezpur University
+            </p>
+            <p class="text-xs opacity-75 mt-1">All rights reserved</p>
+          </div>
+        </div>
+        
+        <!-- Bottom border -->
+        <div class="border-t border-white/20 mt-6 pt-4 text-center">
+          <p class="text-xs opacity-75">
+            Tezpur University
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script>
+      // Initialize animations
+      document.addEventListener('DOMContentLoaded', function() {
+        // Animate cards on page load
+        anime({
+          targets: '.animate-card',
+          translateY: [50, 0],
+          opacity: [0, 1],
+          duration: 800,
+          delay: anime.stagger(100),
+          easing: 'easeOutCubic'
+        });
+
+        // Add hover animations to buttons
+        document.querySelectorAll('.btn-animate').forEach(button => {
+          button.addEventListener('mouseenter', function() {
+            anime({
+              targets: this,
+              scale: 1.05,
+              duration: 200,
+              easing: 'easeOutCubic'
+            });
+          });
+          button.addEventListener('mouseleave', function() {
+            anime({
+              targets: this,
+              scale: 1,
+              duration: 200,
+              easing: 'easeOutCubic'
+            });
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

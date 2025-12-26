@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="bg-white p-6 rounded shadow">
+  <h2 class="text-xl font-semibold mb-4">🤖 Train Model — {{ subject.name }}</h2>
+  
+  <!-- Training Mode Selection -->
+  <div class="mb-6 bg-blue-50 p-4 rounded-lg">
+    <h3 class="font-semibold mb-3">🎯 Select Training Mode</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div class="training-mode selected" data-mode="high_quality">
+        <div class="border-2 border-green-500 rounded-lg p-4 text-center cursor-pointer bg-green-50">
+          <div class="text-2xl mb-2">🎯</div>
+          <h4 class="font-semibold">High Accuracy</h4>
+          <p class="text-sm text-gray-600 mb-2">45-90 seconds</p>
+          <ul class="text-xs text-left text-gray-600">
+            <li>• 20 diverse images per student</li>
+            <li>• <strong>RetinaFace + ArcFace (InsightFace)</strong></li>
+            <li>• <strong>GPU Accelerated</strong> - 5-10x faster</li>
+            <li>• Best accuracy (96-98%)</li>
+            <li>• Advanced face detection & alignment</li>
+            <li>• Automatic CPU fallback if GPU fails</li>
+            <li>• Recommended for production</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="training-mode" data-mode="faster_quality">
+        <div class="border-2 border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-500 transition">
+          <div class="text-2xl mb-2">⚡</div>
+          <h4 class="font-semibold">Faster Quality</h4>
+          <p class="text-sm text-gray-600 mb-2">20-40 seconds</p>
+          <ul class="text-xs text-left text-gray-600">
+            <li>• 12 images per student</li>
+            <li>• <strong>RetinaFace + ArcFace (InsightFace)</strong></li>
+            <li>• <strong>GPU Optimized</strong> - Fast processing</li>
+            <li>• Good accuracy (92-95%)</li>
+            <li>• Advanced face detection</li>
+            <li>• Automatic CPU fallback</li>
+            <li>• Balanced speed & accuracy</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="text-sm text-gray-600 bg-white p-3 rounded border">
+      <strong>💡 Technology Stack:</strong> Both modes use <strong>InsightFace</strong> with <strong>RetinaFace detector</strong> and <strong>ArcFace recognizer</strong>. The system automatically uses GPU when available (5-10x faster) and falls back to CPU if GPU fails. No manual intervention needed!
+    </div>
+  </div>
+
+  <div class="mb-6">
+    <h3 class="font-semibold mb-2">Training Summary</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+      <div class="bg-blue-50 p-4 rounded">
+        <div class="text-2xl font-bold text-blue-600">{{ students|length }}</div>
+        <div class="text-sm text-blue-800">Total Students</div>
+      </div>
+      {% set total_images = namespace(value=0) %}
+      {% for student in students %}
+        {% set total_images.value = total_images.value + student.roll|get_image_count(subject.id) %}
+      {% endfor %}
+      <div class="bg-green-50 p-4 rounded">
+        <div class="text-2xl font-bold text-green-600">{{ total_images.value }}</div>
+        <div class="text-sm text-green-800">Total Images</div>
+      </div>
+      <div class="bg-purple-50 p-4 rounded">
+        <div class="text-2xl font-bold text-purple-600">
+          {% if students|length > 0 %}
+            {{ "%.1f"|format(total_images.value / students|length) }}
+          {% else %}
+            0
+          {% endif %}
+        </div>
+        <div class="text-sm text-purple-800">Avg per Student</div>
+      </div>
+      <div class="bg-yellow-50 p-4 rounded">
+        <div class="text-2xl font-bold text-yellow-600">{{ subject.sessions|length }}</div>
+        <div class="text-sm text-yellow-800">Classes Held</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-6">
+    <button id="trainBtn" class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition w-full">
+      🚀 Start Training (High Accuracy Mode)
+    </button>
+    
+    <!-- Progress Indicator -->
+    <div id="trainingProgress" class="mt-4" style="display: none;">
+      <div class="progress mb-3" style="height: 25px;">
+        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+             role="progressbar" style="width: 0%">Starting...</div>
+      </div>
+      <div id="progressStatus" class="text-sm text-gray-600">
+        Initializing optimized training...
+      </div>
+    </div>
+  </div>
+
+  <div id="result" class="mt-6 p-4 bg-gray-50 rounded" style="display: none;">
+    <h4 class="font-semibold mb-2">Training Results:</h4>
+    <pre id="resultText" class="whitespace-pre-wrap bg-white p-3 rounded border"></pre>
+  </div>
+
+  {% if students %}
+  <div class="mt-6">
+    <h3 class="font-semibold mb-2">Students in Training Set</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+      {% for student in students %}
+      <div class="flex justify-between items-center p-3 border rounded">
+        <div>
+          <span class="font-medium">{{ student.name }}</span>
+          <span class="text-sm text-gray-600">({{ student.roll }})</span>
+        </div>
+        <span class="text-sm px-2 py-1 rounded 
+          {% if student.roll|get_image_count(subject.id) >= 20 %}bg-green-100 text-green-800
+          {% elif student.roll|get_image_count(subject.id) >= 12 %}bg-blue-100 text-blue-800
+          {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+          {{ student.roll|get_image_count(subject.id) }} images
+          {% if student.roll|get_image_count(subject.id) >= 20 %} (High Accuracy)
+          {% elif student.roll|get_image_count(subject.id) >= 12 %} (Faster Quality)
+          {% endif %}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-info mt-4">
+    No students added yet. <a href="{{ url_for('students_page', subject_id=subject.id) }}" class="text-blue-600 underline">Add students first</a>.
+  </div>
+  {% endif %}
+</div>
+
+<div id="trainingProgress" style="display:none;" class="mt-4">
+  <div class="progress">
+    <div id="progressBar" class="progress-bar" style="width:0%">0%</div>
+  </div>
+  <p id="progressStatus" class="mt-2 text-gray-700">Waiting...</p>
+  <div id="spinner" class="mt-2" style="display:none;">
+    <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-600 mx-auto"></div>
+  </div>
+</div>
+
+<div id="result" style="display:none;" class="mt-4">
+  <h3 class="font-semibold mb-2">Result:</h3>
+  <pre id="resultText" class="p-2 bg-gray-100 rounded"></pre>
+</div>
+
+<script>
+const subjectId = {{ subject.id }};
+let selectedMode = 'high_quality';
+let checkTimer = null;
+
+// Training mode selection
+document.querySelectorAll('.training-mode').forEach(mode => {
+  mode.addEventListener('click', function() {
+    // Remove selected class from all
+    document.querySelectorAll('.training-mode').forEach(m => {
+      m.querySelector('div').className = 'border-2 border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-500 transition';
+    });
+    
+    // Add selected class to clicked
+    this.querySelector('div').className = 'border-2 border-green-500 rounded-lg p-4 text-center cursor-pointer bg-green-50';
+    
+    selectedMode = this.dataset.mode;
+    
+    // Update button text
+    const modeName = selectedMode === 'high_quality' ? 'High Accuracy' : 'Faster Quality';
+    document.getElementById('trainBtn').textContent = `🚀 Start Training (${modeName} Mode)`;
+  });
+});
+
+async function startTraining() {
+  const btn = document.getElementById('trainBtn');
+  const progressDiv = document.getElementById('trainingProgress');
+  const progressBar = document.getElementById('progressBar');
+  const progressStatus = document.getElementById('progressStatus');
+  const resultDiv = document.getElementById('result');
+  const resultText = document.getElementById('resultText');
+
+  btn.disabled = true;
+  progressDiv.style.display = 'block';
+  resultDiv.style.display = 'none';
+  progressBar.style.width = '5%';
+  progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-info';
+  progressBar.textContent = 'Starting...';
+  progressStatus.textContent = `Initializing ${selectedMode === 'high_quality' ? 'High Accuracy' : 'Faster Quality'} training - this may take ${selectedMode === 'high_quality' ? '45-90' : '20-40'} seconds...`;
+  document.getElementById('spinner').style.display = 'inline-block';
+
+  await fetch(`/prof/${subjectId}/train/start`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({mode: selectedMode})
+  });
+
+  checkTimer = setInterval(async () => {
+    const resp = await fetch(`/prof/${subjectId}/train/status`);
+    const data = await resp.json();
+    progressBar.style.width = `${data.progress}%`;
+    progressBar.textContent = `${data.progress}%`;
+    progressStatus.textContent = data.status;
+
+    if (data.done) {
+      clearInterval(checkTimer);
+      progressBar.className = data.status.startsWith('❌')
+        ? 'progress-bar bg-danger'
+        : 'progress-bar bg-success';
+      resultDiv.style.display = 'block';
+      resultText.textContent = JSON.stringify(data.result || data.status, null, 2);
+      btn.disabled = false;
+      document.getElementById('spinner').style.display = 'none';
+
+      // ✅ Popup success/failure message
+      const popup = document.createElement('div');
+      popup.className = data.status.startsWith('❌')
+        ? 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded shadow-lg'
+        : 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg';
+      popup.textContent = data.status;
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 4000);
+    }
+  }, 1000);
+}
+
+document.getElementById('trainBtn').addEventListener('click', startTraining);
+</script>
+
+<style>
+.training-mode:hover {
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+.progress-bar {
+  transition: width 0.3s ease;
+}
+</style>
+{% endblock %}

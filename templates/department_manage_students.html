@@ -1,0 +1,445 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h3>👥 Manage Students — {{ subject.name }} — {{ department.name }}</h3>
+
+  <!-- Step 1: Student Details Form -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5>Step 1: Enter Student Details</h5>
+    </div>
+    <div class="card-body">
+      <form id="studentForm">
+        <input type="hidden" id="subject_id" value="{{ subject.id }}">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Name *</label>
+            <input type="text" id="name" class="form-control" placeholder="Enter student name" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Roll No. *</label>
+            <input type="text" id="roll" class="form-control" placeholder="e.g., CSM24011" required>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Branch *</label>
+            <input type="text" id="branch" class="form-control" placeholder="e.g., CSE" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Course *</label>
+            <input type="text" id="course" class="form-control" placeholder="e.g., MCA, B.Tech CSE, etc." required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">
+          💾 Save Student Details
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Step 2: Automatic Image Capture (Hidden initially) -->
+  <div class="card mb-4" id="captureSection" style="display: none;">
+    <div class="card-header bg-info text-white">
+      <h5 class="mb-0">Step 2: Automatic Face Capture</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <!-- Training Mode Selection -->
+        <div class="col-12 mb-4">
+          <h6>🎯 Select Training Mode</h6>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="training-mode-capture selected" data-mode="high_quality" data-count="20">
+                <div class="border-2 border-green-500 rounded-lg p-3 text-center cursor-pointer bg-green-50">
+                  <h6 class="font-semibold">High Accuracy</h6>
+                  <p class="text-sm text-gray-600 mb-1">20 images per student</p>
+                  <small class="text-xs text-gray-500">Best accuracy (95-97%)</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="training-mode-capture" data-mode="faster_quality" data-count="12">
+                <div
+                  class="border-2 border-gray-300 rounded-lg p-3 text-center cursor-pointer hover:border-blue-500 transition bg-white">
+                  <h6 class="font-semibold">Faster Quality</h6>
+                  <p class="text-sm text-gray-600 mb-1">12 images per student</p>
+                  <small class="text-xs text-gray-500">Good accuracy (90-93%)</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Camera Feed -->
+        <div class="col-md-6">
+          <div class="camera-container border rounded p-2 bg-dark">
+            <video id="video" autoplay class="w-100" style="max-height: 300px;"></video>
+          </div>
+          <div class="mt-3 text-center">
+            <div class="alert alert-warning small">
+              <strong>📢 Instructions:</strong> Position the student in good lighting and ensure their face is clearly
+              visible in the frame.
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress and Status -->
+        <div class="col-md-6">
+          <h6>Capture Progress</h6>
+          <div class="progress mb-3" style="height: 30px;">
+            <div id="captureProgress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+              style="width: 0%; background-color: #4CAF50;">
+              <span class="progress-text">0/<span id="totalImages">20</span></span>
+            </div>
+          </div>
+
+          <div id="captureStatus" class="alert alert-info">
+            <strong>Status:</strong> Ready to start automatic capture...
+          </div>
+
+          <div class="capture-controls text-center">
+            <button class="btn btn-success btn-lg" id="startCaptureBtn">
+              🚀 Start Automatic Capture
+            </button>
+            <button class="btn btn-danger btn-lg" id="stopCaptureBtn" style="display: none;">
+              ⏹️ Stop Capture
+            </button>
+          </div>
+
+          <!-- Live Preview -->
+          <div class="mt-4">
+            <h6>Live Preview</h6>
+            <div id="imagePreview" class="border rounded p-2 bg-light"
+              style="height: 120px; overflow-y: auto; text-align: center;">
+              <small class="text-muted">Captured images will appear here...</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Current Students List -->
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Current Students ({{ students|length }})</h5>
+      <div>
+        <a href="{{ url_for('department_train_model', subject_id=subject.id) }}" class="btn btn-success btn-sm">
+          🤖 Train Model
+        </a>
+        <a href="{{ url_for('department_dashboard') }}" class="btn btn-secondary btn-sm">
+          ← Back to Dashboard
+        </a>
+      </div>
+    </div>
+    <div class="card-body">
+      {% if students %}
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th>Name</th>
+              <th>Roll</th>
+              <th>Branch</th>
+              <th>Course</th>
+              <th>Images</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for st in students %}
+            <tr>
+              <td>{{ st.name }}</td>
+              <td>{{ st.roll }}</td>
+              <td>{{ st.branch }}</td>
+              <td>{{ st.course }}</td>
+              <td>
+                {% set image_count = st.roll|get_image_count(subject.id) %}
+                <span class="badge 
+                  {% if image_count >= 20 %}bg-success
+                  {% elif image_count >= 12 %}bg-info
+                  {% elif image_count > 0 %}bg-warning
+                  {% else %}bg-danger{% endif %}">
+                  {{ image_count }}
+                  {% if image_count >= 20 %}/20 ✅
+                  {% elif image_count >= 12 %}/12 ✓
+                  {% else %}/20{% endif %}
+                </span>
+              </td>
+              <td>
+                {% set image_count = st.roll|get_image_count(subject.id) %}
+                {% if image_count >= 20 %}
+                <span class="badge bg-success">High Accuracy Ready</span>
+                {% elif image_count >= 12 %}
+                <span class="badge bg-info">Faster Quality Ready</span>
+                {% elif image_count > 0 %}
+                <span class="badge bg-warning">Incomplete</span>
+                {% else %}
+                <span class="badge bg-danger">No Images</span>
+                {% endif %}
+              </td>
+              <td>
+                <form method="POST"
+                  action="{{ url_for('department_delete_student', subject_id=subject.id, student_id=st.id) }}"
+                  onsubmit="return confirm('Permanently delete {{ st.name }}? All data will be lost!')">
+                  <button class="btn btn-danger btn-sm">🗑️ Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="alert alert-info text-center">
+        <h6>No students added yet</h6>
+        <p class="mb-0">Add students using the form above. Each student needs facial images for training.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+<script>
+  let currentStudentId = null;
+  let currentStudentName = null;
+  let currentStudentRoll = null;
+  let imagesCaptured = 0;
+  let TOTAL_IMAGES = 20; // Default to High Accuracy mode
+  let captureInterval = null;
+  let selectedCaptureMode = 'high_quality';
+
+  // Initialize camera when page loads
+  document.addEventListener('DOMContentLoaded', function () {
+    initCamera('video').then(success => {
+      if (!success) {
+        document.getElementById('captureStatus').innerHTML =
+          '<div class="alert alert-danger"><strong>❌ Camera Error:</strong> Cannot access camera. Please check permissions and refresh the page.</div>';
+      }
+    });
+
+    // Capture mode selection
+    document.querySelectorAll('.training-mode-capture').forEach(mode => {
+      mode.addEventListener('click', function () {
+        // Remove selected class from all
+        document.querySelectorAll('.training-mode-capture').forEach(m => {
+          m.querySelector('div').className = 'border-2 border-gray-300 rounded-lg p-3 text-center cursor-pointer hover:border-blue-500 transition bg-white';
+        });
+
+        // Add selected class to clicked
+        this.querySelector('div').className = 'border-2 border-green-500 rounded-lg p-3 text-center cursor-pointer bg-green-50';
+
+        selectedCaptureMode = this.dataset.mode;
+        TOTAL_IMAGES = parseInt(this.dataset.count);
+
+        // Update display
+        document.getElementById('totalImages').textContent = TOTAL_IMAGES;
+        document.getElementById('captureProgress').style.width = '0%';
+        document.querySelector('.progress-text').textContent = `0/${TOTAL_IMAGES}`;
+        imagesCaptured = 0;
+
+        const modeName = selectedCaptureMode === 'high_quality' ? 'High Accuracy' : 'Faster Quality';
+        document.getElementById('captureStatus').innerHTML =
+          `<strong>Status:</strong> Ready for <strong>${modeName}</strong> mode (${TOTAL_IMAGES} images)`;
+      });
+    });
+  });
+
+  // Step 1: Save Student Details
+  document.getElementById("studentForm").onsubmit = async function (e) {
+    e.preventDefault();
+
+    const subject_id = document.getElementById("subject_id").value;
+    const name = document.getElementById("name").value;
+    const roll = document.getElementById("roll").value;
+    const branch = document.getElementById("branch").value;
+    const course = document.getElementById("course").value;
+
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Saving...';
+
+    try {
+      const resp = await fetch(`/department/subject/${subject_id}/add_student`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, roll, branch, course })
+      });
+
+      const data = await resp.json();
+
+      if (data.status === 'ok') {
+        // Store student info for capture
+        currentStudentId = data.student_id;
+        currentStudentName = name;
+        currentStudentRoll = roll;
+
+        // Show capture section automatically
+        document.getElementById('captureSection').style.display = 'block';
+
+        const modeName = selectedCaptureMode === 'high_quality' ? 'High Accuracy' : 'Faster Quality';
+        document.getElementById('captureStatus').innerHTML =
+          `<strong>Status:</strong> Ready to capture <strong>${name}</strong> (${roll}) in <strong>${modeName}</strong> mode. Click "Start Automatic Capture".`;
+
+        // Scroll to capture section
+        document.getElementById('captureSection').scrollIntoView({ behavior: 'smooth' });
+
+        // Reset form for next student
+        document.getElementById("studentForm").reset();
+
+      } else {
+        alert('❌ Error: ' + data.message);
+      }
+    } catch (error) {
+      alert('❌ Network error: ' + error.message);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    }
+  };
+
+  // Step 2: Start Automatic Capture
+  document.getElementById("startCaptureBtn").onclick = function () {
+    if (!currentStudentId) {
+      alert('❌ Please add student details first.');
+      return;
+    }
+
+    // Update UI for capture mode
+    this.style.display = 'none';
+    document.getElementById('stopCaptureBtn').style.display = 'inline-block';
+    imagesCaptured = 0;
+    updateProgress();
+
+    const modeName = selectedCaptureMode === 'high_quality' ? 'High Accuracy' : 'Faster Quality';
+    document.getElementById('captureStatus').innerHTML =
+      `<strong>Status:</strong> Capturing ${TOTAL_IMAGES} images for <strong>${currentStudentName}</strong> in ${modeName} mode...`;
+
+    document.getElementById('imagePreview').innerHTML = '<small class="text-muted">Capturing images...</small>';
+
+    // Start automatic capture
+    const subject_id = document.getElementById("subject_id").value;
+    captureInterval = setInterval(async () => {
+      if (imagesCaptured >= TOTAL_IMAGES) {
+        completeCapture();
+        return;
+      }
+
+      try {
+        const video = document.getElementById('video');
+        const dataUrl = getImageDataUrl(video);
+
+        const resp = await fetch(`/department/subject/${subject_id}/capture_photo`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ student_id: currentStudentId, image: dataUrl })
+        });
+
+        const result = await resp.json();
+        if (result.status === 'ok') {
+          imagesCaptured++;
+          updateProgress();
+
+          // Show preview of captured images
+          if (imagesCaptured <= 6) { // Show first 6 images as preview
+            const preview = document.getElementById('imagePreview');
+            if (imagesCaptured === 1) preview.innerHTML = '';
+            preview.innerHTML += `<img src="${dataUrl}" style="width: 50px; height: 50px; object-fit: cover; margin: 2px; border: 1px solid #ccc;">`;
+          }
+
+          // Update status periodically
+          if (imagesCaptured % 5 === 0 || imagesCaptured === TOTAL_IMAGES) {
+            document.getElementById('captureStatus').innerHTML =
+              `<strong>Status:</strong> ${imagesCaptured}/${TOTAL_IMAGES} images captured for <strong>${currentStudentName}</strong>`;
+          }
+        }
+      } catch (error) {
+        console.error('Capture error:', error);
+      }
+    }, 500); // Capture every 500ms (slower for better quality)
+  };
+
+  // Stop capture manually
+  document.getElementById("stopCaptureBtn").onclick = function () {
+    clearInterval(captureInterval);
+    document.getElementById('startCaptureBtn').style.display = 'inline-block';
+    document.getElementById('stopCaptureBtn').style.display = 'none';
+
+    const modeName = selectedCaptureMode === 'high_quality' ? 'High Accuracy' : 'Faster Quality';
+    document.getElementById('captureStatus').innerHTML =
+      `<div class="alert alert-warning"><strong>⏹️ Capture stopped:</strong> ${imagesCaptured}/${TOTAL_IMAGES} images captured for <strong>${currentStudentName}</strong> in ${modeName} mode</div>`;
+  };
+
+  // Complete capture automatically when target images are reached
+  function completeCapture() {
+    clearInterval(captureInterval);
+    document.getElementById('stopCaptureBtn').style.display = 'none';
+
+    const modeName = selectedCaptureMode === 'high_quality' ? 'High Accuracy' : 'Faster Quality';
+
+    // Show success message
+    document.getElementById('captureStatus').innerHTML =
+      `<div class="alert alert-success">
+      <strong>✅ Capture Complete!</strong> ${TOTAL_IMAGES}/${TOTAL_IMAGES} images captured for <strong>${currentStudentName}</strong> in ${modeName} mode
+    </div>`;
+
+    document.getElementById('imagePreview').innerHTML =
+      `<div class="text-success">
+      <strong>✅ All ${TOTAL_IMAGES} images captured successfully!</strong><br>
+      <small>Ready for ${modeName} training</small>
+    </div>`;
+
+    // Auto-refresh page after 3 seconds to show updated student list
+    setTimeout(() => {
+      window.location.reload();
+    }, 3000);
+  }
+
+  // Update progress bar
+  function updateProgress() {
+    const percent = (imagesCaptured / TOTAL_IMAGES) * 100;
+    const progressBar = document.getElementById('captureProgress');
+    const progressText = progressBar.querySelector('.progress-text');
+
+    progressBar.style.width = percent + '%';
+    progressText.textContent = `${imagesCaptured}/${TOTAL_IMAGES}`;
+
+    // Change color based on progress
+    if (percent < 30) {
+      progressBar.style.backgroundColor = '#dc3545'; // Red
+    } else if (percent < 70) {
+      progressBar.style.backgroundColor = '#ffc107'; // Yellow
+    } else if (percent < 100) {
+      progressBar.style.backgroundColor = '#17a2b8'; // Blue
+    } else {
+      progressBar.style.backgroundColor = '#28a745'; // Green
+    }
+  }
+</script>
+
+<style>
+  .progress-bar {
+    transition: width 0.3s ease;
+  }
+
+  .progress-text {
+    font-weight: bold;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+  }
+
+  .camera-container {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .training-mode-capture:hover {
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+  }
+</style>
+{% endblock %}

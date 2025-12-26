@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <h2>{{ department.name }} Department Dashboard</h2>
+
+  <!-- Add Professor Section -->
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Add Professor</h4>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('department_add_professor') }}">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <input type="text" name="name" class="form-control" placeholder="Professor Name" required>
+          </div>
+          <div class="col-md-4">
+            <input type="text" name="prof_id" class="form-control" placeholder="Professor ID" required>
+          </div>
+          <div class="col-md-3">
+            <input type="password" name="temp_password" class="form-control" placeholder="Temporary Password (required)" required>
+            <small class="form-text text-muted">Professor will change this on first login</small>
+          </div>
+          <div class="col-md-1">
+            <button class="btn btn-success">Add</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Subject Section -->
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Add Subject</h4>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('department_add_subject') }}">
+        <div class="row g-3">
+          <div class="col-md-5">
+            <input type="text" name="name" class="form-control" placeholder="Subject Name" required>
+          </div>
+          <div class="col-md-5">
+            <input type="text" name="prof_id" class="form-control" placeholder="Professor ID (optional)">
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-primary">Add</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Student Management Section -->
+  <div class="card mb-4">
+    <div class="card-header bg-info text-white">
+      <h4 class="mb-0">👥 Student Management</h4>
+    </div>
+    <div class="card-body">
+      {% for subj in subjects %}
+      <div class="mb-3 p-3 border rounded">
+        <h5>{{ subj.name }}</h5>
+        <div class="d-flex gap-2 align-items-center">
+          <a href="{{ url_for('department_manage_students', subject_id=subj.id) }}" 
+             class="btn btn-primary btn-sm">Manage Students</a>
+          <a href="{{ url_for('department_train_model', subject_id=subj.id) }}" 
+             class="btn btn-warning btn-sm">Train Model</a>
+          <span class="badge bg-secondary ms-2">
+            Students: {{ subj.students|length }}
+          </span>
+          <span class="badge bg-success ms-1">
+            Trained: {{ subj.students|map(attribute='roll')|map('get_image_count', subj.id)|select('>=', 20)|list|length }}
+          </span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Professors List -->
+  <div class="card mb-4">
+    <div class="card-header bg-dark text-white">
+      <h4 class="mb-0">Professors</h4>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th>Name</th>
+              <th>ID</th>
+              <th>Subjects</th>
+              <th>Classes Conducted</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for s in prof_stats %}
+            <tr>
+              <td>{{ s.prof.username }}</td>
+              <td>{{ s.prof.prof_id }}</td>
+              <td>{{ s.subjects }}</td>
+              <td>{{ s.classes }}</td>
+              <td>
+                <form method="POST" action="{{ url_for('delete_professor', prof_id=s.prof.id) }}" 
+                      onsubmit="return confirm('Are you sure you want to delete Professor {{ s.prof.username }}? This will unassign them from all subjects!')">
+                  <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subjects List -->
+  <div class="card">
+    <div class="card-header bg-dark text-white">
+      <h4 class="mb-0">Subjects</h4>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th>Name</th>
+              <th>Professor</th>
+              <th>Students</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for subj in subjects %}
+            <tr>
+              <td>{{ subj.name }}</td>
+              <td>
+                {% if subj.professor %}
+                  {{ subj.professor.username }} ({{ subj.professor.prof_id }})
+                {% else %}
+                  <span class="text-muted">Unassigned</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge bg-primary">{{ subj.students|length }}</span>
+              </td>
+              <td>
+                <div class="d-flex gap-2">
+                  {% if subj.professor %}
+                    <form method="POST" action="{{ url_for('remove_professor_from_subject', subject_id=subj.id) }}" 
+                          onsubmit="return confirm('Remove professor from {{ subj.name }}?')">
+                      <button type="submit" class="btn btn-warning btn-sm">🗑️ Remove Prof</button>
+                    </form>
+                  {% else %}
+                    <form method="POST" action="{{ url_for('assign_professor_to_subject', subject_id=subj.id) }}">
+                      <select name="prof_id" class="form-select form-select-sm" required>
+                        <option value="">Select Professor</option>
+                        {% for prof in professors %}
+                          <option value="{{ prof.prof_id }}">{{ prof.username }} ({{ prof.prof_id }})</option>
+                        {% endfor %}
+                      </select>
+                      <button type="submit" class="btn btn-success btn-sm mt-1">➕ Assign</button>
+                    </form>
+                  {% endif %}
+                  <form method="POST" action="{{ url_for('delete_subject', subject_id=subj.id) }}" 
+                        onsubmit="return confirm('⚠️ WARNING: This will permanently delete {{ subj.name }} and ALL associated data (students, attendance records, images)! This action cannot be undone.')">
+                    <button type="submit" class="btn btn-danger btn-sm">❌ Delete Course</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+.table th {
+    background-color: #343a40;
+    color: white;
+    border: none;
+    font-weight: 600;
+}
+.table td {
+    vertical-align: middle;
+    padding: 12px 8px;
+}
+.btn-danger, .btn-warning, .btn-success {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+.btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(220,53,69,0.3);
+}
+.btn-warning:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(255,193,7,0.3);
+}
+.btn-success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(40,167,69,0.3);
+}
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+.form-select {
+    display: inline-block !important;
+    width: auto !important;
+    margin-right: 5px;
+}
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+.d-flex.gap-2 {
+    gap: 8px;
+}
+.mt-1 {
+    margin-top: 4px;
+}
+</style>
+{% endblock %}

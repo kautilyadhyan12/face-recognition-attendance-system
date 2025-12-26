@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h3>📈 Training Summary — {{ subject.name }}</h3>
+  {% if report %}
+  <table class="table table-bordered w-50 mt-3">
+    <tr><th>Students Trained</th><td>{{ report.students }}</td></tr>
+    <tr><th>Avg Images per Student</th><td>{{ report.avg_images }}</td></tr>
+    <tr><th>Min Images</th><td>{{ report.min_images }}</td></tr>
+    <tr><th>Max Images</th><td>{{ report.max_images }}</td></tr>
+  </table>
+  {% else %}
+  <div class="alert alert-info">No training data available yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

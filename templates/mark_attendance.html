@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="bg-white p-6 rounded shadow">
+  <h2 class="text-xl font-semibold mb-4">Mark Attendance — {{ subject.name }}</h2>
+
+  <div class="grid md:grid-cols-2 gap-6">
+    <div>
+      <video id="video" autoplay playsinline class="border rounded w-full"></video>
+      <div class="flex gap-2 mt-2">
+        <button id="startBtn" class="bg-green-600 text-white px-3 py-1 rounded">Start</button>
+        <button id="stopBtn" class="bg-red-600 text-white px-3 py-1 rounded">Stop</button>
+      </div>
+      <div class="mt-3" id="notif"></div>
+    </div>
+
+    <div>
+      <h3 class="font-semibold">Live Log</h3>
+      <div id="log" class="p-2 border rounded h-72 overflow-auto"></div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+<script>
+const subjectId = {{ subject.id }};
+let sessionId = null;
+
+async function startSession(){
+  const r = await fetch(`/prof/${subjectId}/start_session`, {method:'POST'});
+  const j = await r.json();
+  sessionId = j.session_id;
+  startMarking(sessionId, subjectId);
+  document.getElementById('notif').innerText = 'Session started: ' + sessionId;
+}
+
+function appendLog(txt){
+  const el = document.getElementById('log');
+  el.innerText = txt + '\n' + el.innerText;
+}
+
+document.getElementById('startBtn').addEventListener('click', async () => {
+  await startSession();
+});
+
+document.getElementById('stopBtn').addEventListener('click', () => {
+  stopMarking();
+  document.getElementById('notif').innerText = 'Session stopped';
+});
+
+initCamera('video').catch(console.error);
+</script>
+{% endblock %}
