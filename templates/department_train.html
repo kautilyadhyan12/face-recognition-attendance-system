@@ -2,16 +2,16 @@
 {% block content %}
 <div class="bg-white p-6 rounded shadow">
   <h2 class="text-xl font-semibold mb-4">
-    🤖 Train Model — {{ subject.name }} — {{ department.name }}
+     Train Model — {{ subject.name }} — {{ department.name }}
   </h2>
   
   <!-- Training Mode Selection -->
   <div class="mb-6 bg-blue-50 p-4 rounded-lg">
-    <h3 class="font-semibold mb-3">🎯 Select Training Mode</h3>
+    <h3 class="font-semibold mb-3"> Select Training Mode</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
       <div class="training-mode selected" data-mode="high_quality">
         <div class="border-2 border-green-500 rounded-lg p-4 text-center cursor-pointer bg-green-50">
-          <div class="text-2xl mb-2">🎯</div>
+          <div class="text-2xl mb-2"></div>
           <h4 class="font-semibold">High Accuracy</h4>
           <p class="text-sm text-gray-600 mb-2">45-90 seconds</p>
           <ul class="text-xs text-left text-gray-600">
@@ -28,7 +28,7 @@
       
       <div class="training-mode" data-mode="faster_quality">
         <div class="border-2 border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-500 transition">
-          <div class="text-2xl mb-2">⚡</div>
+          <div class="text-2xl mb-2"></div>
           <h4 class="font-semibold">Faster Quality</h4>
           <p class="text-sm text-gray-600 mb-2">20-40 seconds</p>
           <ul class="text-xs text-left text-gray-600">
@@ -45,7 +45,7 @@
     </div>
     
     <div class="text-sm text-gray-600 bg-white p-3 rounded border">
-      <strong>💡 Technology Stack:</strong> Both modes use <strong>InsightFace</strong> with <strong>RetinaFace detector</strong> and <strong>ArcFace recognizer</strong>. The system automatically uses GPU when available (5-10x faster) and falls back to CPU if GPU fails. No manual intervention needed!
+      <strong> Technology Stack:</strong> Both modes use <strong>InsightFace</strong> with <strong>RetinaFace detector</strong> and <strong>ArcFace recognizer</strong>. The system automatically uses GPU when available (5-10x faster) and falls back to CPU if GPU fails. No manual intervention needed!
     </div>
   </div>
 
@@ -134,7 +134,7 @@
 
   <div class="mt-6">
     <a href="{{ url_for('department_manage_students', subject_id=subject.id) }}" class="btn btn-primary">
-      👥 Manage Students
+       Manage Students
     </a>
     <a href="{{ url_for('department_dashboard') }}" class="btn btn-secondary">
       ← Back to Dashboard
@@ -221,9 +221,9 @@ async function startTraining() {
       btn.disabled = false;
       document.getElementById('spinner').style.display = 'none';
 
-      // ✅ Popup success/failure message
+      //  Popup success/failure message
       const popup = document.createElement('div');
-      popup.className = data.status.startsWith('❌')
+      popup.className = data.status.startsWith('')
         ? 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded shadow-lg'
         : 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg';
       popup.textContent = data.status;
