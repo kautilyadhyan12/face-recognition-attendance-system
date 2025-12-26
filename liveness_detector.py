@@ -1,4 +1,4 @@
-# liveness_detector.py - Liveness Detection for Face Recognition System
+
 import cv2
 import numpy as np
 from scipy.spatial import distance as dist
@@ -18,7 +18,7 @@ class LivenessDetector:
         self.HEAD_MOVEMENT_THRESH = 10  # pixels
         self.MIN_FRAMES_FOR_HEAD_MOVEMENT = 10
         
-        # Face landmarks indices (68-point model)
+        # Face landmarks indices 
         self.FACIAL_LANDMARKS_IDXS = OrderedDict([
             ("mouth", (48, 68)),
             ("right_eyebrow", (17, 22)),
@@ -66,13 +66,11 @@ class LivenessDetector:
         
     def eye_aspect_ratio(self, eye):
         """Calculate the eye aspect ratio"""
-        # Compute the euclidean distances between the two sets of
-        # vertical eye landmarks (x, y)-coordinates
+        
         A = dist.euclidean(eye[1], eye[5])
         B = dist.euclidean(eye[2], eye[4])
         
-        # Compute the euclidean distance between the horizontal
-        # eye landmark (x, y)-coordinates
+        
         C = dist.euclidean(eye[0], eye[3])
         
         # Compute the eye aspect ratio
@@ -81,17 +79,17 @@ class LivenessDetector:
     
     def mouth_aspect_ratio(self, mouth):
         """Calculate the mouth aspect ratio for yawning detection"""
-        # Compute the euclidean distances between the three sets of
+       
         # vertical mouth landmarks
         A = dist.euclidean(mouth[13], mouth[19])
         B = dist.euclidean(mouth[14], mouth[18])
         C = dist.euclidean(mouth[15], mouth[17])
         
-        # Compute the euclidean distance between the horizontal
+       
         # mouth landmark
         D = dist.euclidean(mouth[12], mouth[16])
         
-        # Compute the mouth aspect ratio
+        # the mouth aspect ratio
         mar = (A + B + C) / (3.0 * D)
         return mar
     
@@ -100,7 +98,7 @@ class LivenessDetector:
         left_ear = self.eye_aspect_ratio(left_eye)
         right_ear = self.eye_aspect_ratio(right_eye)
         
-        # Average the eye aspect ratio together for both eyes
+        # Average the eye aspect ratio 
         ear = (left_ear + right_ear) / 2.0
         
         # Check if eye aspect ratio is below the blink threshold
@@ -127,7 +125,7 @@ class LivenessDetector:
             # If mouth has been open for 10 consecutive frames, count as a yawn
             if self.consecutive_frames_mouth_open >= 10:
                 self.yawn_count += 1
-                self.consecutive_frames_mouth_open = 0  # Reset after counting yawn
+                self.consecutive_frames_mouth_open = 0  
         else:
             self.consecutive_frames_mouth_open = 0
         
@@ -161,18 +159,18 @@ class LivenessDetector:
         """Calculate overall liveness score"""
         score = 0
         
-        # Check for eye blinks (1 point per blink, max 2 points)
+        # Check for eye blinks 
         score += min(self.eye_blink_count, 2)
         
-        # Check for yawning (1 point)
+        # Check for yawning 
         if self.yawn_count > 0:
             score += 1
         
-        # Check for head movement (2 points)
+        # Check for head movement 
         if self.head_movement_detected:
             score += 2
         
-        # Check if we've processed enough frames (minimum 15 frames)
+        # Check if we've processed enough frames 
         if self.total_frames_processed >= 15:
             score += 1
         
@@ -225,7 +223,7 @@ class LivenessDetector:
         """Draw liveness information on the frame"""
         height, width = frame.shape[:2]
         
-        # Create overlay for liveness info
+        
         overlay = frame.copy()
         
         # Draw semi-transparent background for text
@@ -257,14 +255,14 @@ class LivenessDetector:
             x, y, w, h = face_rect
             cv2.rectangle(frame, (x, y), (x + w, y + h), status_color, 2)
             
-            # Draw "LIVE" or "VERIFYING" text above face
+          
             text_y = max(10, y - 10)
             cv2.putText(frame, "LIVE" if self.is_live else "VERIFYING", 
                        (x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, status_color, 2)
         
         return frame
 
-# Face landmark detector using dlib (fallback if not available)
+# Face landmark detector using dlib 
 class FaceLandmarkDetector:
     def __init__(self):
         self.detector = None
@@ -273,21 +271,21 @@ class FaceLandmarkDetector:
         
         try:
             import dlib
-            # Initialize dlib's face detector and landmark predictor
+           
             self.detector = dlib.get_frontal_face_detector()
             
-            # Try to download the shape predictor file
+           
             shape_predictor_path = "shape_predictor_68_face_landmarks.dat"
             
-            # If file doesn't exist, we'll use a simpler approach
+           
             if os.path.exists(shape_predictor_path):
                 self.predictor = dlib.shape_predictor(shape_predictor_path)
                 self.initialized = True
-                print("✅ Face landmark detector initialized with dlib")
+                print(" Face landmark detector initialized with dlib")
             else:
-                print("⚠️ Shape predictor file not found. Using simplified detection.")
+                print(" Shape predictor file not found. Using simplified detection.")
         except ImportError:
-            print("⚠️ dlib not installed. Using simplified face detection.")
+            print(" dlib not installed. Using simplified face detection.")
         
     def detect_landmarks(self, frame, face_rect):
         """Detect facial landmarks for a given face rectangle"""
@@ -321,19 +319,19 @@ class FaceLandmarkDetector:
         # Create approximate landmarks
         landmarks = np.zeros((68, 2), dtype=int)
         
-        # Jaw line (points 0-16)
+        # Jaw line
         for i in range(17):
             landmarks[i] = (x + int(w * i / 16), y + h)
         
-        # Left eyebrow (points 17-21)
+        # Left eyebrow 
         for i in range(5):
             landmarks[17 + i] = (x + int(w * (i + 1) / 6), y + int(h * 0.2))
         
-        # Right eyebrow (points 22-26)
+        # Right eyebrow 
         for i in range(5):
             landmarks[22 + i] = (x + int(w * (i + 4) / 6), y + int(h * 0.2))
         
-        # Nose (points 27-35)
+        # Nose 
         nose_points = [(0.35, 0.4), (0.5, 0.3), (0.65, 0.4), 
                       (0.5, 0.6), (0.5, 0.7), (0.5, 0.8),
                       (0.4, 0.9), (0.5, 0.95), (0.6, 0.9)]
@@ -342,7 +340,7 @@ class FaceLandmarkDetector:
             landmarks[27 + i] = (x + int(w * nose_points[i][0]), 
                                 y + int(h * nose_points[i][1]))
         
-        # Left eye (points 36-41)
+        # Left eye 
         eye_points = [(0.3, 0.35), (0.35, 0.3), (0.4, 0.35),
                      (0.35, 0.4), (0.3, 0.4), (0.35, 0.45)]
         
@@ -350,12 +348,12 @@ class FaceLandmarkDetector:
             landmarks[36 + i] = (x + int(w * eye_points[i][0]), 
                                 y + int(h * eye_points[i][1]))
         
-        # Right eye (points 42-47)
+        # Right eye 
         for i in range(6):
             landmarks[42 + i] = (x + int(w * (eye_points[i][0] + 0.3)), 
                                 y + int(h * eye_points[i][1]))
         
-        # Mouth (points 48-67)
+        # Mouth 
         mouth_points = [(0.3, 0.7), (0.35, 0.65), (0.4, 0.7), (0.45, 0.65), 
                        (0.5, 0.7), (0.55, 0.65), (0.6, 0.7), (0.65, 0.65),
                        (0.7, 0.7), (0.65, 0.75), (0.6, 0.8), (0.55, 0.75),
@@ -394,7 +392,7 @@ class LivenessProcessor:
         )
         
         if len(faces) > 0:
-            return faces[0]  # Return first face
+            return faces[0]  
         return None
     
     def process_frame(self, frame):
@@ -405,7 +403,7 @@ class LivenessProcessor:
         face_rect = self.detect_face(frame)
         
         if face_rect is None:
-            # No face detected
+            
             return frame, None, {"error": "No face detected"}
         
         x, y, w, h = face_rect
