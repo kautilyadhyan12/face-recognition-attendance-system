@@ -81,7 +81,7 @@
 </div>
 
 <script src="{{ url_for('static', filename='js/camera.js') }}"></script>
-<!-- Add liveness detection script -->
+<!--  liveness detection script -->
 <script src="{{ url_for('static', filename='js/liveness.js') }}"></script>
 <script>
 const subjectId = {{ subject.id }};
@@ -112,7 +112,7 @@ async function startSession(){
     startMarking(sessionId, subjectId);
     
     // Show notification
-    showNotification('🎯 Attendance marking started successfully!', 'success');
+    showNotification(' Attendance marking started successfully!', 'success');
     
   } catch (error) {
     console.error('Session start error:', error);
