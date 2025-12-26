@@ -1,4 +1,4 @@
-# download_shape_predictor.py
+
 import urllib.request
 import os
 import bz2
@@ -9,11 +9,11 @@ def download_shape_predictor():
     filename = "shape_predictor_68_face_landmarks.dat"
     
     if os.path.exists(filename):
-        print(f"✅ Shape predictor already exists: {filename}")
+        print(f" Shape predictor already exists: {filename}")
         return True
     
-    print(f"📥 Downloading shape predictor from: {url}")
-    print("⚠️ This may take a few minutes...")
+    print(f" Downloading shape predictor from: {url}")
+    print(" This may take a few minutes...")
     
     try:
         # Download the compressed file
@@ -29,13 +29,13 @@ def download_shape_predictor():
         # Clean up compressed file
         os.remove(compressed_file)
         
-        print(f"✅ Successfully downloaded: {filename}")
-        print(f"📁 File size: {os.path.getsize(filename) / (1024*1024):.2f} MB")
+        print(f" Successfully downloaded: {filename}")
+        print(f" File size: {os.path.getsize(filename) / (1024*1024):.2f} MB")
         return True
         
     except Exception as e:
-        print(f"❌ Download failed: {e}")
-        print("ℹ️ Basic liveness detection will still work")
+        print(f" Download failed: {e}")
+        print(" Basic liveness detection will still work")
         return False
 
 if __name__ == "__main__":
