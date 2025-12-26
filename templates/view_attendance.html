@@ -2,10 +2,10 @@
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3>📊 Attendance Records — {{ subject.name }}</h3>
+        <h3> Attendance Records — {{ subject.name }}</h3>
         <div>
             <button class="btn btn-outline-secondary" onclick="toggleView()" id="toggleViewBtn">
-                📅 Switch to Calendar View
+                 Switch to Calendar View
             </button>
             <a href="?format=csv" class="btn btn-outline-secondary">⬇ Export CSV</a>
         </div>
@@ -252,7 +252,7 @@
 <script>
 let currentDate = new Date();
 let classDates = {{ class_dates|tojson }};
-let currentView = 'list'; // 'list' or 'calendar'
+let currentView = 'list'; 
 
 // Toggle functionality for student details
 function toggleStudentDetails(studentId, dateStr) {
@@ -347,8 +347,8 @@ function loadStudentDetails(studentId, dateStr, detailsContainer) {
                         </div>
                         <p><strong>Status:</strong> 
                             ${data.attendance_percentage >= 75 || data.eligible_override ? 
-                                '<span class="text-success">✅ Eligible</span>' : 
-                                '<span class="text-danger">❌ Not Eligible</span>'
+                                '<span class="text-success"> Eligible</span>' : 
+                                '<span class="text-danger"> Not Eligible</span>'
                             }
                         </p>
                     </div>
@@ -424,13 +424,13 @@ function toggleView() {
     if (currentView === 'list') {
         listView.style.display = 'none';
         calendarView.style.display = 'block';
-        toggleBtn.textContent = '📋 Switch to List View';
+        toggleBtn.textContent = ' Switch to List View';
         currentView = 'calendar';
         renderCalendar();
     } else {
         listView.style.display = 'block';
         calendarView.style.display = 'none';
-        toggleBtn.textContent = '📅 Switch to Calendar View';
+        toggleBtn.textContent = ' Switch to Calendar View';
         currentView = 'list';
     }
 }
@@ -482,7 +482,7 @@ function renderCalendar() {
         
         dayElement.innerHTML = `
             <div class="day-number">${day}</div>
-            ${hasClass ? '<div class="day-info">📚 Class</div>' : '<div class="day-info">&nbsp;</div>'}
+            ${hasClass ? '<div class="day-info"> Class</div>' : '<div class="day-info">&nbsp;</div>'}
         `;
         
         dayElement.onclick = () => {
@@ -514,11 +514,11 @@ function showDateDetails(dateStr) {
             return response.json();
         })
         .then(data => {
-            console.log('📊 RAW DATA RECEIVED:', data);
+            console.log(' RAW DATA RECEIVED:', data);
             
             const detailsDiv = document.getElementById('dateDetails');
             
-            let html = `<h6>📅 ${dateStr}</h6>`;
+            let html = `<h6> ${dateStr}</h6>`;
             
             // PROPER NULL CHECK AND ARRAY VALIDATION
             if (data.attendance_records && Array.isArray(data.attendance_records) && data.attendance_records.length > 0) {
@@ -535,7 +535,7 @@ function showDateDetails(dateStr) {
                     a.student_name.localeCompare(b.student_name)
                 );
                 
-                console.log('🎯 SORTED RECORDS:', sortedRecords);
+                console.log(' SORTED RECORDS:', sortedRecords);
                 
                 sortedRecords.forEach((record, index) => {
                     console.log(`👤 Processing student ${index + 1}:`, record);
@@ -571,7 +571,7 @@ function showDateDetails(dateStr) {
                 html += `
                     <p class="text-muted">No attendance records found for this date.</p>
                     <button class="btn btn-primary btn-sm" onclick="createSession('${dateStr}')">
-                        ➕ Create Class Session
+                         Create Class Session
                     </button>
                 `;
             }
@@ -579,7 +579,7 @@ function showDateDetails(dateStr) {
             detailsDiv.innerHTML = html;
         })
         .catch(error => {
-            console.error('❌ Error fetching date details:', error);
+            console.error(' Error fetching date details:', error);
             const detailsDiv = document.getElementById('dateDetails');
             detailsDiv.innerHTML = `
                 <div class="alert alert-danger">
@@ -590,7 +590,7 @@ function showDateDetails(dateStr) {
         });
 }
 
-// Add these helper functions for session management
+// helper functions for session management
 function createSession(dateStr) {
     if (confirm(`Create a class session for ${dateStr}?`)) {
         fetch(`/prof/{{ subject.id }}/create_session`, {
@@ -602,8 +602,8 @@ function createSession(dateStr) {
         .then(data => {
             if (data.status === 'success') {
                 showNotification('Class session created successfully!', 'success');
-                showDateDetails(dateStr); // Refresh the details
-                // Refresh the calendar to show new class
+                showDateDetails(dateStr); 
+                
                 location.reload();
             } else {
                 showNotification('Failed to create session: ' + data.message, 'error');
