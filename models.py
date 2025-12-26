@@ -1,4 +1,4 @@
-# models.py
+
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_login import UserMixin
@@ -74,8 +74,7 @@ class Student(db.Model, UserMixin):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     eligible_override = db.Column(db.Boolean, default=False)
 
-    # No unique constraints - same student can be in multiple departments and subjects
-    # Relationships
+    
     attendances = db.relationship('Attendance', backref='student_ref', lazy=True)
 
     def get_id(self):
