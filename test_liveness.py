@@ -1,4 +1,4 @@
-# test_liveness.py
+
 import cv2
 import base64
 from liveness_detector import get_detector
