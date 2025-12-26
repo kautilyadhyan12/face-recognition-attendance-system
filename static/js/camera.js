@@ -1,4 +1,4 @@
-// static/js/camera.js - ENHANCED VERSION WITH ANTI-SPOOFING LIVENESS DETECTION
+
 class BeautifulCamera {
   constructor() {
     this.isMarking = false;
@@ -8,14 +8,14 @@ class BeautifulCamera {
     this.markInterval = null;
     
     // Liveness detection properties
-    this.livenessEnabled = true; // Enable liveness detection by default
+    this.livenessEnabled = true; 
     this.livenessCheckInterval = null;
     this.currentLivenessData = null;
     this.livenessUI = null;
     this.livenessCheckPassed = false;
-    this.REQUIRED_LIVENESS_SCORE = 80; // Increased for better security
+    this.REQUIRED_LIVENESS_SCORE = 80; 
     this.REQUIRED_REAL_PERSON_SCORE = 70;
-    this.MIN_BLINKS_REQUIRED = 2; // Require at least 2 blinks
+    this.MIN_BLINKS_REQUIRED = 2; 
     this.REQUIRE_HEAD_MOVEMENT = true;
     this.REQUIRE_MOUTH_MOVEMENT = true;
     this.spoofingAlertShown = false;
@@ -296,7 +296,7 @@ class BeautifulCamera {
         console.error('Liveness check error:', error);
         this.consecutiveFailedLivenessChecks++;
       }
-    }, 500); // Check every 500ms
+    }, 500); 
   }
 
   showInstructionalMessage(livenessData) {
@@ -331,7 +331,7 @@ class BeautifulCamera {
     }
   }
 
-  // Enhanced notification system - FIXED Z-INDEX
+  // Enhanced notification system 
   showNotification(message, type = 'info', duration = 4000) {
     // Remove existing notifications
     document.querySelectorAll('.beautiful-notification').forEach(notif => notif.remove());
@@ -383,7 +383,7 @@ class BeautifulCamera {
     this.isMarking = true;
     this.showNotification('🎯 Starting attendance marking with anti-spoofing verification...', 'info');
 
-    // Update UI
+    
     const startBtn = document.getElementById('startBtn');
     const stopBtn = document.getElementById('stopBtn');
     if (startBtn) startBtn.disabled = true;
