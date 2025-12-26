@@ -164,8 +164,8 @@
                     </form>
                   {% endif %}
                   <form method="POST" action="{{ url_for('delete_subject', subject_id=subj.id) }}" 
-                        onsubmit="return confirm('⚠️ WARNING: This will permanently delete {{ subj.name }} and ALL associated data (students, attendance records, images)! This action cannot be undone.')">
-                    <button type="submit" class="btn btn-danger btn-sm">❌ Delete Course</button>
+                        onsubmit="return confirm(' WARNING: This will permanently delete {{ subj.name }} and ALL associated data (students, attendance records, images)! This action cannot be undone.')">
+                    <button type="submit" class="btn btn-danger btn-sm"> Delete Course</button>
                   </form>
                 </div>
               </td>
