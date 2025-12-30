@@ -1,3 +1,8 @@
+This project uses GPU-intensive models.Due to hardware limitations on 
+free cloud platforms, live deployment is not provided.
+
+A complete video demonstration and system walkthrough 
+is available below.
 demo: https://youtu.be/Hct65Vwb2tM 
 
 # face-recognition-attendance-system
