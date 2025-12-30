@@ -18,6 +18,7 @@ Create Virtual Environment:  1)python3.10 -m venv venv
 
 Install Dependencies:pip install -r requirements.txt
 
-Check GPU: python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+Check GPU: python -c "import torch; print('CUDA Available:', torch.cuda.is_available())"
+
 
 Start Server: python app.py
